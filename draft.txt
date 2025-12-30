@@ -1,0 +1,272 @@
+'use client'
+import React, { useEffect, useRef, useState } from "react";
+import { gsap } from "gsap";
+import { Draggable } from "gsap/Draggable";
+
+gsap.registerPlugin(Draggable);
+
+const ShapePreview = () => {
+  const stageRef = useRef(null);
+  const shapeRef = useRef(null);
+  const pointRefs = useRef([]);
+  const edgeRefs = useRef([]);
+  const edgeTextRefs = useRef([]);
+  const [points, setPoints] = useState([
+    { x: 150, y: 100 },
+    { x: 350, y: 100 },
+    { x: 350, y: 250 },
+    { x: 150, y: 250 },
+  ]);
+  const [edgeLengths, setEdgeLengths] = useState([]);
+
+  // === Draw shape dynamically ===
+  // const drawShape = () => {
+  //   const stageRect = stageRef.current.getBoundingClientRect();
+
+
+  //   const newPoints = pointRefs.current.map((el) => {
+  //     const rect = el.getBoundingClientRect();
+  //     return {
+  //       x: rect.left - stageRect.left + rect.width / 2,
+  //       y: rect.top - stageRect.top + rect.height / 2,
+  //     };
+  //   });
+
+  //   const path =
+  //     newPoints.map((p, i) => `${i === 0 ? "M" : "L"}${p.x},${p.y}`).join(" ") +
+  //     " Z";
+
+  //   shapeRef.current.setAttribute("d", path);
+
+  //   // Update edge midpoints
+  //   edgeRefs.current.forEach((edge, i) => {
+  //     const p1 = newPoints[i];
+  //     const p2 = newPoints[(i + 1) % newPoints.length];
+  //     const midX = (p1.x + p2.x) / 2;
+  //     const midY = (p1.y + p2.y) / 2;
+  //     gsap.set(edge, { x: midX - 10, y: midY - 10 });
+  //   });
+  // };
+
+
+  const drawShape = () => {
+    if (!stageRef.current) return;
+    const stageRect = stageRef.current.getBoundingClientRect();
+    // 1. Calculate current point positions relative to the stage
+    const newPoints = pointRefs.current.map((el) => {
+      const rect = el.getBoundingClientRect();
+      return {
+        x: rect.left - stageRect.left + rect.width / 2,
+        y: rect.top - stageRect.top + rect.height / 2,
+      };
+    });
+    // 2. Generate and set the SVG path 'd' attribute
+    const path =
+      newPoints.map((p, i) => `${i === 0 ? "M" : "L"}${p.x},${p.y}`).join(" ") +
+      " Z";
+
+    shapeRef.current.setAttribute("d", path);
+
+    const edgeLengths = [];// Array to store the length of each edge
+
+    // Update edge midpoints
+    edgeRefs.current.forEach((edge, i) => {
+      const p1 = newPoints[i];
+      const p2 = newPoints[(i + 1) % newPoints.length]; // Connects the last point back to the first
+
+      // --- Line Length Calculation ---
+      const dx = p2.x - p1.x;
+      const dy = p2.y - p1.y;
+      const length = Math.sqrt(dx * dx + dy * dy);
+      edgeLengths.push(length);
+      // -------------------------------
+
+      const midX = (p1.x + p2.x) / 2;
+      const midY = (p1.y + p2.y) / 2;
+      gsap.set(edge, { x: midX , y: midY });
+      // Position the length label (offset slightly above the midpoint)
+      if (edgeTextRefs.current[i]) {
+        gsap.set(edgeTextRefs.current[i], {
+          x: midX ,
+          y: midY - 25, // Offset y position for visibility
+          // Using GSAP's transform utility to center the label text itself
+          xPercent: -25 ,
+          yPercent: -25,
+          rotate:90*i,
+        });
+      }
+
+      // Optional: Display the length on the edge
+      // You would need to add a ref/element for text display here
+      // For example, if you had a text element associated with the edge:
+      // edgeTextRefs.current[i].textContent = length.toFixed(2);
+    });
+
+    console.log("Edge Lengths:", edgeLengths);
+    // If you need to use this data outside, you would call a state setter here, e.g.:
+    setEdgeLengths(edgeLengths);
+  };
+
+
+
+  // === Initialize Draggable points + edges ===
+  useEffect(() => {
+    if (!stageRef.current) return;
+
+    // Clean up old draggables
+    gsap.utils.toArray([...pointRefs.current, ...edgeRefs.current]).forEach(
+      (el) => Draggable.get(el)?.kill()
+    );
+
+    // --- Draggable corners ---
+    pointRefs.current.forEach((el) => {
+      Draggable.create(el, {
+        type: "x,y",
+        bounds: stageRef.current,
+        onDrag: drawShape,
+        onPress: drawShape,
+        onRelease: drawShape,
+      });
+    });
+
+    // --- Draggable edges ---
+    edgeRefs.current.forEach((edge, i) => {
+      Draggable.create(edge, {
+        type: "x,y",
+        bounds: stageRef.current,
+        onPress() {
+          this.startX = this.x;
+          this.startY = this.y;
+        },
+        onDrag() {
+          const dx = this.x - this.startX;
+          const dy = this.y - this.startY;
+          this.startX = this.x;
+          this.startY = this.y;
+
+          // move both connected points
+          const el1 = pointRefs.current[i];
+          const el2 = pointRefs.current[(i + 1) % pointRefs.current.length];
+          gsap.set([el1, el2], {
+            x: `+=${dx}`,
+            y: `+=${dy}`,
+          });
+
+          drawShape();
+        },
+      });
+    });
+
+    drawShape();
+  }, [points.length]);
+
+
+  return (
+    <div
+      ref={stageRef}
+      style={{
+        width: "100%",
+        height: "500px",
+        position: "relative",
+        overflow: "hidden",
+        padding: "10px",
+        background: "transparent"
+      }}
+    >
+      {/* SVG Shape */}
+      <svg
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+        }}
+      >
+        <defs>
+          <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#93c5fd" />
+            <stop offset="100%" stopColor="#3b82f6" />
+          </linearGradient>
+        </defs>
+        <path
+          ref={shapeRef}
+          fill="black"
+          stroke="red"
+          strokeWidth="5"
+        />
+      </svg>
+
+
+      {/* Edge Length Labels (A, B, C, D) */}
+            {edgeLengths.map((length, i) => (
+                <div
+                    key={`length-label-${i}`}
+                    ref={(el) => (edgeTextRefs.current[i] = el)}
+                    className="lengthIndicator"
+                    style={{
+                        position: "absolute",
+                        color: "#B91C1C", // Red text for visibility
+                        backgroundColor: "rgba(255, 255, 255, 0.7)",
+                        padding: "2px 5px",
+                        borderRadius: "3px",
+                        fontSize: "12px",
+                        fontWeight: "600",
+                        pointerEvents: "none", // Ignore clicks/drags on the text
+                        zIndex: 4,
+                    }}
+                >
+                    {/* Edge Name (A, B, C, D) and Length */}
+                    {String.fromCharCode(65 + i)}: {length.toFixed(1)} px
+                </div>
+            ))}
+
+      {/* Draggable Corners */}
+      {points.map((p, i) => (
+        <div
+          key={`point-${i}`}
+          ref={(el) => (pointRefs.current[i] = el)}
+          style={{
+            position: "absolute",
+            top: p.y - 9,
+            left: p.x - 9,
+            width: "18px",
+            height: "18px",
+            background: "#fff",
+            border: "2px solid #1e3a8a",
+            borderRadius: "50%",
+            cursor: "grab",
+            touchAction: "none",
+            transform: "translate(0, 0)",
+            zIndex: 5,
+          }}
+        ></div>
+      ))}
+
+      {/* Draggable Edges (line midpoints) */}
+      {points.map((_, i) => (
+        <div
+          key={`edge-${i}`}
+          ref={(el) => (edgeRefs.current[i] = el)}
+          style={{
+            position: "absolute",
+            top: "5px",
+            left: "5px",
+            width: "10px",
+            height: "10px",
+            background: "yellow",
+            border: "2px solid red",
+            borderRadius: "4px",
+            cursor: "move",
+            touchAction: "none",
+            transform: "translate(-50%,-50%)",
+            zIndex: 3,
+          }}
+        ></div>
+      ))}
+
+    </div>
+  );
+};
+
+export default ShapePreview;
