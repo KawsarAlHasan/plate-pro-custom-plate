@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+import { useRouter } from "next/navigation";
+import { useShapeList } from "../api/shapeListApi";
 
 const shapeTemplates = [
   {
@@ -200,27 +202,30 @@ const shapeTemplates = [
 ];
 
 function ShapeTemplate({ onShapeSelect }) {
-  const createShapeFromTemplate = (template) => {
-    const newShape = {
-      id: `shape-${Date.now()}`,
-      type: template.id,
-      points: [...template.points.map((p) => [...p])],
-      color: "#1890ff",
-      strokeWidth: 2,
-      closed: template.closed,
-      visible: true,
-      locked: false,
-      name: template.name,
-    };
+  const router = useRouter();
+  const { shapeList, isLoading, isError, mutate } = useShapeList();
 
-    onShapeSelect([newShape]);
-  };
+
 
   return (
     <div className="p-4">
       <h2 className="text-center mb-4 font-bold">Shape Templates</h2>
       <div className="text-center overflow-scroll h-[90vh] p-4">
-        {shapeTemplates.map((template) => (
+        {shapeList?.map((template) => (
+          <div
+            key={template.id}
+            className="cursor-pointer border p-2 mb-2 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300"
+            onClick={() => router.push(`/shapes?shapeId=${template.id}`)}
+          >
+            <img
+              src={template.icon}
+              alt={template.name}
+              className="w-[250px]  object-contain mb-2 mx-auto"
+            />
+            <span>{template.name}</span>
+          </div>
+        ))}
+        {/* {shapeTemplates.map((template) => (
           <div
             key={template.id}
             className="cursor-pointer border p-2 mb-2 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300"
@@ -233,7 +238,7 @@ function ShapeTemplate({ onShapeSelect }) {
             />
             <span>{template.name}</span>
           </div>
-        ))}
+        ))} */}
       </div>
     </div>
   );

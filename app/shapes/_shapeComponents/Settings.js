@@ -26,7 +26,7 @@ function Settings({
       size="small"
       className="shadow-md"
     >
-      <Space direction="vertical" className="w-full" size="small">
+      <Space orientation="vertical" className="w-full" size="small">
         {/* Grid Size */}
         <div>
           <div className="flex justify-between items-center mb-1">

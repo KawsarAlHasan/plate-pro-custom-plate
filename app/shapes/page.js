@@ -43,8 +43,19 @@ import DimensionInput from "./_shapeComponents/DimensionInput";
 import ValidationPanel from "./_shapeComponents/ValidationPanel";
 import StepIndicator from "./_shapeComponents/StepIndicator";
 import ShapeTemplate from "./ShapeTemplate";
+import { useShapeList } from "../api/shapeListApi";
+import { useSearchParams } from "next/navigation";
 
 const DxfEditor = () => {
+  const searchParams = useSearchParams();
+  const shapeId = searchParams.get("shapeId");
+
+  console.log("Shape ID:", shapeId);
+
+  const { shapeList, isLoading, isError, mutate } = useShapeList();
+
+  console.log("shapeList:", shapeList);
+
   // State Management
   const [shapes, setShapes] = useState([]);
   const [history, setHistory] = useState([]);
@@ -101,39 +112,75 @@ const DxfEditor = () => {
   const fileInputRef = useRef();
   const containerRef = useRef();
 
-  // Initialize with sample shapes
   useEffect(() => {
-    const sampleShapes = [
-      {
-        id: "shape-1",
-        type: "rectangle",
-        points: [
-          [291, 269],
-          [378, 132],
-          [597, 132],
-          [681, 270],
-          [681, 624],
-          [291, 624],
-        ],
-        color: "#1890ff",
-        strokeWidth: 2,
-        closed: true,
-        visible: true,
-        locked: false,
-        name: "Sample Rectangle",
-      },
-    ];
-    setShapes(sampleShapes);
-    updateHistory(sampleShapes);
-    calculateMeasurements(sampleShapes);
+    if (!shapeList || !shapeId) return;
 
-    // Initialize corner settings
+    // shapeId string → number
+    const selectedShape = shapeList.find(
+      (shape) => shape.id === Number(shapeId)
+    );
+
+    if (!selectedShape) return;
+
+    const formattedShape = {
+      id: `shape-${selectedShape.id}`,
+      type: "polygon",
+      points: selectedShape.points,
+      color: "#1890ff",
+      strokeWidth: 2,
+      closed: selectedShape.closed,
+      visible: true,
+      locked: false,
+      name: selectedShape.name,
+    };
+
+    const shapesArray = [formattedShape];
+
+    setShapes(shapesArray);
+    updateHistory(shapesArray);
+    calculateMeasurements(shapesArray);
+
+    // corner settings initialize
     const initialCornerSettings = {};
-    sampleShapes[0].points.forEach((_, idx) => {
+    formattedShape.points.forEach((_, idx) => {
       initialCornerSettings[idx] = { type: "sharp", radius: 0 };
     });
     setCornerSettings(initialCornerSettings);
-  }, []);
+  }, [shapeId, shapeList]);
+
+  // Initialize with sample shapes
+  // useEffect(() => {
+  //   const sampleShapes = [
+  //     {
+  //       id: "shape-1",
+  //       type: "rectangle",
+  //       points: [
+  //         [291, 269],
+  //         [378, 132],
+  //         [597, 132],
+  //         [681, 270],
+  //         [681, 624],
+  //         [291, 624],
+  //       ],
+  //       color: "#1890ff",
+  //       strokeWidth: 2,
+  //       closed: true,
+  //       visible: true,
+  //       locked: false,
+  //       name: "Sample Rectangle",
+  //     },
+  //   ];
+  //   setShapes(sampleShapes);
+  //   updateHistory(sampleShapes);
+  //   calculateMeasurements(sampleShapes);
+
+  //   // Initialize corner settings
+  //   const initialCornerSettings = {};
+  //   sampleShapes[0].points.forEach((_, idx) => {
+  //     initialCornerSettings[idx] = { type: "sharp", radius: 0 };
+  //   });
+  //   setCornerSettings(initialCornerSettings);
+  // }, []);
 
   // Handle window resize
   useEffect(() => {
@@ -1205,6 +1252,138 @@ const DxfEditor = () => {
                     </Space>
                   </Card>
 
+                  {/* Precision Movement */}
+                  {selectedPoint && toolMode === "select-point" && (
+                    <Card
+                      title="🎯 Precision Movement"
+                      size="small"
+                      className="shadow-md border-2 border-purple-400"
+                    >
+                      <Space
+                        orientation="vertical"
+                        className="w-full"
+                        size="small"
+                      >
+                        <Alert
+                          title={`Point ${selectedPoint.pointIndex + 1}`}
+                          description={`Position: (${Math.round(
+                            shapes[selectedPoint.shapeIndex]?.points[
+                              selectedPoint.pointIndex
+                            ][0]
+                          )}, ${Math.round(
+                            shapes[selectedPoint.shapeIndex]?.points[
+                              selectedPoint.pointIndex
+                            ][1]
+                          )})`}
+                          type="info"
+                          showIcon
+                        />
+
+                        <div>
+                          <label className="block text-sm font-medium mb-2">
+                            Move Increment: {moveIncrement}"
+                          </label>
+                          <InputNumber
+                            value={moveIncrement}
+                            onChange={(value) => setMoveIncrement(value || 0.5)}
+                            min={0.1}
+                            max={12}
+                            step={0.1}
+                            style={{ width: "100%" }}
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-2">
+                          <div></div>
+                          <Button
+                            type="primary"
+                            icon={<ArrowUpOutlined />}
+                            onClick={() =>
+                              movePoint(
+                                selectedPoint.shapeIndex,
+                                selectedPoint.pointIndex,
+                                "up"
+                              )
+                            }
+                            block
+                            size="small"
+                          />
+                          <div></div>
+
+                          <Button
+                            type="primary"
+                            icon={<ArrowLeftOutlined />}
+                            onClick={() =>
+                              movePoint(
+                                selectedPoint.shapeIndex,
+                                selectedPoint.pointIndex,
+                                "left"
+                              )
+                            }
+                            block
+                            size="small"
+                          />
+                          <div className="flex items-center justify-center text-xs font-medium bg-gray-100 rounded">
+                            {moveIncrement}"
+                          </div>
+                          <Button
+                            type="primary"
+                            icon={<ArrowRightOutlined />}
+                            onClick={() =>
+                              movePoint(
+                                selectedPoint.shapeIndex,
+                                selectedPoint.pointIndex,
+                                "right"
+                              )
+                            }
+                            block
+                            size="small"
+                          />
+
+                          <div></div>
+                          <Button
+                            type="primary"
+                            icon={<ArrowDownOutlined />}
+                            onClick={() =>
+                              movePoint(
+                                selectedPoint.shapeIndex,
+                                selectedPoint.pointIndex,
+                                "down"
+                              )
+                            }
+                            block
+                            size="small"
+                          />
+                          <div></div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2 mt-2">
+                          <Button
+                            onClick={() => setSelectedPoint(null)}
+                            block
+                            size="small"
+                          >
+                            Deselect
+                          </Button>
+                          <Button
+                            danger
+                            onClick={() => {
+                              deletePoint(
+                                selectedPoint.shapeIndex,
+                                selectedPoint.pointIndex
+                              );
+                              setSelectedPoint(null);
+                            }}
+                            block
+                            size="small"
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                      </Space>
+                    </Card>
+                  )}
+
                   <DimensionInput
                     shapes={shapes}
                     updateShapes={updateShapes}
@@ -1270,134 +1449,6 @@ const DxfEditor = () => {
                     shapes={shapes}
                   />
                 </>
-              )}
-
-              {/* Precision Movement */}
-              {selectedPoint && toolMode === "select-point" && (
-                <Card
-                  title="🎯 Precision Movement"
-                  size="small"
-                  className="shadow-md border-2 border-purple-400"
-                >
-                  <Space orientation="vertical" className="w-full" size="small">
-                    <Alert
-                      title={`Point ${selectedPoint.pointIndex + 1}`}
-                      description={`Position: (${Math.round(
-                        shapes[selectedPoint.shapeIndex]?.points[
-                          selectedPoint.pointIndex
-                        ][0]
-                      )}, ${Math.round(
-                        shapes[selectedPoint.shapeIndex]?.points[
-                          selectedPoint.pointIndex
-                        ][1]
-                      )})`}
-                      type="info"
-                      showIcon
-                    />
-
-                    <div>
-                      <label className="block text-sm font-medium mb-2">
-                        Move Increment: {moveIncrement}"
-                      </label>
-                      <InputNumber
-                        value={moveIncrement}
-                        onChange={(value) => setMoveIncrement(value || 0.5)}
-                        min={0.1}
-                        max={12}
-                        step={0.1}
-                        style={{ width: "100%" }}
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-2">
-                      <div></div>
-                      <Button
-                        type="primary"
-                        icon={<ArrowUpOutlined />}
-                        onClick={() =>
-                          movePoint(
-                            selectedPoint.shapeIndex,
-                            selectedPoint.pointIndex,
-                            "up"
-                          )
-                        }
-                        block
-                        size="small"
-                      />
-                      <div></div>
-
-                      <Button
-                        type="primary"
-                        icon={<ArrowLeftOutlined />}
-                        onClick={() =>
-                          movePoint(
-                            selectedPoint.shapeIndex,
-                            selectedPoint.pointIndex,
-                            "left"
-                          )
-                        }
-                        block
-                        size="small"
-                      />
-                      <div className="flex items-center justify-center text-xs font-medium bg-gray-100 rounded">
-                        {moveIncrement}"
-                      </div>
-                      <Button
-                        type="primary"
-                        icon={<ArrowRightOutlined />}
-                        onClick={() =>
-                          movePoint(
-                            selectedPoint.shapeIndex,
-                            selectedPoint.pointIndex,
-                            "right"
-                          )
-                        }
-                        block
-                        size="small"
-                      />
-
-                      <div></div>
-                      <Button
-                        type="primary"
-                        icon={<ArrowDownOutlined />}
-                        onClick={() =>
-                          movePoint(
-                            selectedPoint.shapeIndex,
-                            selectedPoint.pointIndex,
-                            "down"
-                          )
-                        }
-                        block
-                        size="small"
-                      />
-                      <div></div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2 mt-2">
-                      <Button
-                        onClick={() => setSelectedPoint(null)}
-                        block
-                        size="small"
-                      >
-                        Deselect
-                      </Button>
-                      <Button
-                        danger
-                        onClick={() => {
-                          deletePoint(
-                            selectedPoint.shapeIndex,
-                            selectedPoint.pointIndex
-                          );
-                          setSelectedPoint(null);
-                        }}
-                        block
-                        size="small"
-                      >
-                        Delete
-                      </Button>
-                    </div>
-                  </Space>
-                </Card>
               )}
 
               {/* Shape Properties */}

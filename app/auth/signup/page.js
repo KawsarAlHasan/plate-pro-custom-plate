@@ -1,17 +1,15 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
-import { Form, Input, Checkbox, Button, message } from "antd";
-import { MailOutlined, LockOutlined } from "@ant-design/icons";
+import { Form, Input, Button, message } from "antd";
+import { MailOutlined, LockOutlined, UserOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
-import { API } from "../../api/api";
 import Cookies from "js-cookie";
+import { API } from "../../api/api";
 
-export default function LoginPage() {
+export default function SignupPage() {
   const [form] = Form.useForm();
-
   const router = useRouter();
-
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const onFinish = async (values) => {
@@ -19,19 +17,23 @@ export default function LoginPage() {
     try {
       const payload = {
         email: values.email,
+        full_name: values.full_name,
         password: values.password,
+        password2: values.password2,
       };
-      const res = await API.post("/api/auth/login/", payload);
 
-      if (res.status === 200) {
-        message.success("Login successful!");
-        Cookies.set("token", res?.data?.access);
+      const res = await API.post("/api/auth/register/", payload);
+
+      if (res.status === 201) {
+        message.success("Registration successful! Please login.");
+        Cookies.set("token", res?.data?.tokens?.access);
         router.push("/");
       }
     } catch (error) {
-      console.log("Login Error:", error);
+      console.log("Registration Error:", error);
       message.error(
-        error?.response?.data?.message || "Login failed. Please try again."
+        error?.response?.data?.message ||
+          "Registration failed. Please try again."
       );
     } finally {
       setIsSubmitting(false);
@@ -44,24 +46,44 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="min-h-[calc(100vh-90px)] flex justify-center items-center bg-gradient-to-br from-blue-50 via-white to-purple-50 py-4 lg:py-12 px-2 lg:px-4">
-      <div className="w-full max-w-[520px] bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
+    <main className="min-h-[calc(100vh-90px)] flex justify-center items-center bg-gradient-to-br from-blue-50 via-white to-purple-50 py-4 px-2 lg:px-4">
+      <div className="w-full max-w-[590px] bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
         {/* Form Section */}
         <div className="px-4 lg:px-8 py-6 lg:py-10">
           <h1 className="text-3xl font-bold text-gray-800 text-center mb-2">
-            Welcome Back
+            Create Account
           </h1>
           <p className="text-gray-500 text-center mb-8">
-            Please enter your credentials to continue
+            Sign up to get started
           </p>
 
           <Form
             form={form}
-            name="login"
+            name="signup"
             onFinish={onFinish}
             onFinishFailed={onFinishFailed}
             layout="vertical"
+            // className="space-y-1"
           >
+            {/* Full Name Field */}
+            <Form.Item
+              label={
+                <span className="text-gray-700 font-medium">Full Name</span>
+              }
+              name="full_name"
+              rules={[
+                { required: true, message: "Please input your full name!" },
+                { min: 2, message: "Name must be at least 2 characters!" },
+              ]}
+            >
+              <Input
+                prefix={<UserOutlined className="text-gray-400" />}
+                placeholder="John Doe"
+                className="rounded-lg border-gray-300 hover:border-red-500 focus:border-red-500"
+                size="large"
+              />
+            </Form.Item>
+
             {/* Email Field */}
             <Form.Item
               label={
@@ -89,6 +111,12 @@ export default function LoginPage() {
               name="password"
               rules={[
                 { required: true, message: "Please input your password!" },
+                {
+                  pattern:
+                    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+                  message:
+                    "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character and be at least 8 characters long!",
+                },
               ]}
             >
               <Input.Password
@@ -99,21 +127,39 @@ export default function LoginPage() {
               />
             </Form.Item>
 
-            {/* Remember Me & Forgot Password */}
-            <div className="flex justify-between items-center mb-6">
-              <Form.Item name="remember" valuePropName="checked" noStyle>
-                <Checkbox className="text-gray-600">Remember me</Checkbox>
-              </Form.Item>
-              <Link
-                href="/auth/forgotpassword"
-                className="text-red-600 hover:text-red-700 font-medium transition-colors"
-              >
-                Forgot password?
-              </Link>
-            </div>
+            {/* Confirm Password Field */}
+            <Form.Item
+              label={
+                <span className="text-gray-700 font-medium">
+                  Confirm Password
+                </span>
+              }
+              name="password2"
+              dependencies={["password"]}
+              rules={[
+                { required: true, message: "Please confirm your password!" },
+                ({ getFieldValue }) => ({
+                  validator(_, value) {
+                    if (!value || getFieldValue("password") === value) {
+                      return Promise.resolve();
+                    }
+                    return Promise.reject(
+                      new Error("The two passwords do not match!")
+                    );
+                  },
+                }),
+              ]}
+            >
+              <Input.Password
+                prefix={<LockOutlined className="text-gray-400" />}
+                placeholder="Confirm your password"
+                className="rounded-lg border-gray-300 hover:border-red-500 focus:border-red-500"
+                size="large"
+              />
+            </Form.Item>
 
             {/* Submit Button */}
-            <Form.Item>
+            <Form.Item className="mt-6">
               <Button
                 type="primary"
                 htmlType="submit"
@@ -121,20 +167,20 @@ export default function LoginPage() {
                 size="large"
                 className="w-full h-12 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 border-0 rounded-lg font-semibold text-base shadow-lg hover:shadow-xl transition-all duration-300"
               >
-                Sign In
+                Create Account
               </Button>
             </Form.Item>
           </Form>
 
-          {/* Sign Up Link */}
+          {/* Login Link */}
           <div className="text-center mt-6">
             <p className="text-gray-600">
-              Don't have an account?{" "}
+              Already have an account?{" "}
               <Link
-                href="/auth/signup"
+                href="/auth/signin"
                 className="text-red-600 hover:text-red-700 font-semibold transition-colors"
               >
-                Sign up here
+                Sign in here
               </Link>
             </p>
           </div>
@@ -154,7 +200,7 @@ export default function LoginPage() {
           {/* Social Login Buttons */}
           <div className="grid grid-cols-1">
             <button
-              onClick={() => console.log("Google login clicked")}
+              onClick={() => console.log("Google signup clicked")}
               className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
