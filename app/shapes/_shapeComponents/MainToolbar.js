@@ -18,6 +18,7 @@ function MainToolbar({
   shapes,
   totalArea,
   totalPerimeter,
+  calculateMeasurements,
 }) {
   // Undo/Redo System
   const handleUndo = () => {
@@ -59,7 +60,7 @@ function MainToolbar({
           <Button
             icon={<RedoOutlined />}
             onClick={handleRedo}
-            disabled={historyIndex >= history.length - 1}
+            disabled={historyIndex >= history?.length - 1}
             size="large"
           />
         </Tooltip>
@@ -90,20 +91,20 @@ function MainToolbar({
         <Divider orientation="vertical" />
 
         <span className="text-sm font-medium px-3 py-1 bg-blue-100 rounded">
-          {shapes.filter((s) => s.visible).length} / {shapes.length} shapes
+          {shapes?.filter((s) => s.visible).length} / {shapes?.length} shapes
         </span>
       </div>
 
       <div className="flex items-center gap-4">
         <Statistic
           title="Total Area"
-          value={totalArea.toFixed(2)}
+          value={totalArea?.toFixed(2)}
           suffix="sq ft"
           style={{ fontSize: "16px", color: "#1890ff" }}
         />
         <Statistic
           title="Perimeter"
-          value={totalPerimeter.toFixed(2)}
+          value={totalPerimeter?.toFixed(2)}
           suffix="ft"
           style={{ fontSize: "16px", color: "#52c41a" }}
         />

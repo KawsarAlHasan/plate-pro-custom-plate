@@ -37,8 +37,6 @@ export default function Header() {
 
   const { profileData, isLoading, isError, mutate } = useMyProfile(token);
 
-  console.log(profileData);
-
   const handleLogout = () => {
     Cookies.remove("token");
     setToken(null);

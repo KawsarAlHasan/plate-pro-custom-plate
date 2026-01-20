@@ -1,6 +1,4 @@
-"use client";
 import { useRouter } from "next/navigation";
-import { useShapeList } from "../api/shapeListApi";
 
 const shapeTemplates = [
   {
@@ -201,11 +199,8 @@ const shapeTemplates = [
   },
 ];
 
-function ShapeTemplate({ onShapeSelect }) {
+function ShapeTemplate({ shapeList, isLoading, isError, mutate }) {
   const router = useRouter();
-  const { shapeList, isLoading, isError, mutate } = useShapeList();
-
-
 
   return (
     <div className="p-4">
@@ -213,32 +208,18 @@ function ShapeTemplate({ onShapeSelect }) {
       <div className="text-center overflow-scroll h-[90vh] p-4">
         {shapeList?.map((template) => (
           <div
-            key={template.id}
+            key={template?.id}
             className="cursor-pointer border p-2 mb-2 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300"
-            onClick={() => router.push(`/shapes?shapeId=${template.id}`)}
+            onClick={() => router.push(`/shapes?shapeId=${template?.id}`)}
           >
             <img
-              src={template.icon}
-              alt={template.name}
+              src={template?.icon}
+              alt={template?.name}
               className="w-[250px]  object-contain mb-2 mx-auto"
             />
-            <span>{template.name}</span>
+            <span>{template?.name}</span>
           </div>
         ))}
-        {/* {shapeTemplates.map((template) => (
-          <div
-            key={template.id}
-            className="cursor-pointer border p-2 mb-2 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300"
-            onClick={() => createShapeFromTemplate(template)}
-          >
-            <img
-              src={template.icon}
-              alt={template.name}
-              className="w-[250px]  object-contain mb-2 mx-auto"
-            />
-            <span>{template.name}</span>
-          </div>
-        ))} */}
       </div>
     </div>
   );

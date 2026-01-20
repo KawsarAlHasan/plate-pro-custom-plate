@@ -6,7 +6,7 @@ function StepIndicator({ currentStep, setCurrentStep }) {
     <div>
       <Card size="small" className="shadow-lg bg-white">
         <div className="flex justify-between items-center">
-          {[1, 2, 3, 4, 5].map((step) => (
+          {[1, 2, 3, 4].map((step) => (
             <div
               key={step}
               className={`flex flex-col items-center cursor-pointer transition-all duration-300 ${
@@ -35,8 +35,7 @@ function StepIndicator({ currentStep, setCurrentStep }) {
                 {step === 1 && "Shape"}
                 {step === 2 && "Holes"}
                 {step === 3 && "Material"}
-                {step === 4 && "Corners"}
-                {step === 5 && "Review"}
+                {step === 4 && "Review"}
               </span>
             </div>
           ))}

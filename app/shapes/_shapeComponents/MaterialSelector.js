@@ -1,5 +1,18 @@
 "use client";
-import { Card, Button, Space, Select, Input, Upload, Alert, Divider, Radio, Image, message, Tag } from "antd";
+import {
+  Card,
+  Button,
+  Space,
+  Select,
+  Input,
+  Upload,
+  Alert,
+  Divider,
+  Radio,
+  Image,
+  message,
+  Tag,
+} from "antd";
 import { UploadOutlined, CheckCircleOutlined } from "@ant-design/icons";
 import React, { useState } from "react";
 
@@ -8,47 +21,47 @@ const { TextArea } = Input;
 
 // Material Options
 const materials = [
-  { 
-    id: "granite", 
-    name: "Granite", 
+  {
+    id: "granite",
+    name: "Granite",
     description: "Natural stone, durable and heat resistant",
     priceMultiplier: 1.0,
-    icon: "🪨"
+    icon: "🪨",
   },
-  { 
-    id: "quartz", 
-    name: "Quartz", 
+  {
+    id: "quartz",
+    name: "Quartz",
     description: "Engineered stone, non-porous and low maintenance",
     priceMultiplier: 1.2,
-    icon: "💎"
+    icon: "💎",
   },
-  { 
-    id: "marble", 
-    name: "Marble", 
+  {
+    id: "marble",
+    name: "Marble",
     description: "Elegant natural stone with unique veining",
     priceMultiplier: 1.5,
-    icon: "🏛️"
+    icon: "🏛️",
   },
-  { 
-    id: "solid-surface", 
-    name: "Solid Surface", 
+  {
+    id: "solid-surface",
+    name: "Solid Surface",
     description: "Seamless, repairable, various colors",
     priceMultiplier: 0.8,
-    icon: "📋"
+    icon: "📋",
   },
-  { 
-    id: "laminate", 
-    name: "Laminate", 
+  {
+    id: "laminate",
+    name: "Laminate",
     description: "Affordable, wide variety of patterns",
     priceMultiplier: 0.5,
-    icon: "📄"
+    icon: "📄",
   },
-  { 
-    id: "stainless-steel", 
-    name: "Stainless Steel", 
+  {
+    id: "stainless-steel",
+    name: "Stainless Steel",
     description: "Professional grade, hygienic",
     priceMultiplier: 1.3,
-    icon: "🔩"
+    icon: "🔩",
   },
 ];
 
@@ -93,50 +106,11 @@ function MaterialSelector({
   setSelectedColor,
   specialColorRequest,
   setSpecialColorRequest,
-  specialColorFile,
-  setSpecialColorFile,
 }) {
   const [selectedFinish, setSelectedFinish] = useState(null);
-  const [showSpecialColor, setShowSpecialColor] = useState(false);
-
-  // Handle file upload
-  const handleFileUpload = (info) => {
-    if (info.file.status === 'done' || info.file.originFileObj) {
-      setSpecialColorFile(info.file.originFileObj || info.file);
-      message.success("Color reference uploaded");
-    }
-  };
-
-  // Custom upload props
-  const uploadProps = {
-    name: 'file',
-    accept: 'image/*',
-    maxCount: 1,
-    beforeUpload: (file) => {
-      const isImage = file.type.startsWith('image/');
-      if (!isImage) {
-        message.error('You can only upload image files!');
-        return Upload.LIST_IGNORE;
-      }
-      const isLt5M = file.size / 1024 / 1024 < 5;
-      if (!isLt5M) {
-        message.error('Image must be smaller than 5MB!');
-        return Upload.LIST_IGNORE;
-      }
-      setSpecialColorFile(file);
-      return false; // Prevent auto upload
-    },
-    onRemove: () => {
-      setSpecialColorFile(null);
-    },
-  };
 
   return (
-    <Card 
-      title="🎨 Material & Color" 
-      size="small" 
-      className="shadow-md"
-    >
+    <Card title="🎨 Material & Color" size="small" className="shadow-md">
       <Space orientation="vertical" className="w-full" size="middle">
         {/* Material Selection */}
         <div>
@@ -148,14 +122,18 @@ function MaterialSelector({
                 type={selectedMaterial === material.id ? "primary" : "default"}
                 onClick={() => setSelectedMaterial(material.id)}
                 className={`h-auto py-2 text-left ${
-                  selectedMaterial === material.id ? '' : 'hover:border-blue-400'
+                  selectedMaterial === material.id
+                    ? ""
+                    : "hover:border-blue-400"
                 }`}
                 block
               >
                 <div className="flex items-start gap-2">
                   <span className="text-xl">{material.icon}</span>
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium text-sm truncate">{material.name}</div>
+                    <div className="font-medium text-sm truncate">
+                      {material.name}
+                    </div>
                     {/* <div className="text-xs opacity-70 truncate">{material.description}</div> */}
                   </div>
                 </div>
@@ -165,7 +143,7 @@ function MaterialSelector({
           {selectedMaterial && (
             <div className="mt-2 text-xs text-green-600 flex items-center gap-1">
               <CheckCircleOutlined />
-              {materials.find(m => m.id === selectedMaterial)?.name} selected
+              {materials.find((m) => m.id === selectedMaterial)?.name} selected
             </div>
           )}
         </div>
@@ -186,11 +164,13 @@ function MaterialSelector({
                   key={thickness.value}
                   value={thickness.value}
                   className="text-center"
-                  style={{ width: '100%' }}
+                  style={{ width: "100%" }}
                 >
                   <div>
                     <div className="font-medium">{thickness.label}</div>
-                    <div className="text-xs opacity-70">{thickness.description}</div>
+                    <div className="text-xs opacity-70">
+                      {thickness.description}
+                    </div>
                   </div>
                 </Radio.Button>
               ))}
@@ -209,14 +189,14 @@ function MaterialSelector({
                 key={color.id}
                 onClick={() => {
                   setSelectedColor(color.id);
-                  setShowSpecialColor(false);
                   setSpecialColorRequest("");
                 }}
                 className={`
                   relative cursor-pointer rounded-lg p-1 transition-all
-                  ${selectedColor === color.id 
-                    ? 'ring-2 ring-blue-500 ring-offset-2' 
-                    : 'hover:ring-2 hover:ring-gray-300'
+                  ${
+                    selectedColor === color.id
+                      ? "ring-2 ring-blue-500 ring-offset-2"
+                      : "hover:ring-2 hover:ring-gray-300"
                   }
                 `}
               >
@@ -224,63 +204,20 @@ function MaterialSelector({
                   className="w-full h-10 rounded-md border border-gray-300"
                   style={{ backgroundColor: color.hex }}
                 />
-                <div className="text-xs text-center mt-1 truncate">{color.name}</div>
+                <div className="text-xs text-center mt-1 truncate">
+                  {color.name}
+                </div>
                 {color.popular && (
-                  <Tag color="gold" className="absolute -top-1 -right-1 text-xs px-1">
+                  <Tag
+                    color="gold"
+                    className="absolute -top-1 -right-1 text-xs px-1"
+                  >
                     Hot
                   </Tag>
                 )}
               </div>
             ))}
           </div>
-
-          {/* Special Color Toggle */}
-          <Button
-            type={showSpecialColor ? "primary" : "dashed"}
-            onClick={() => {
-              setShowSpecialColor(!showSpecialColor);
-              if (!showSpecialColor) {
-                setSelectedColor(null);
-              }
-            }}
-            block
-            className="mb-2"
-          >
-            🌈 Request Special Color
-          </Button>
-
-          {/* Special Color Request */}
-          {showSpecialColor && (
-            <div className="bg-purple-50 p-3 rounded-lg space-y-3">
-              <Alert
-                type="info"
-                message="Special Color Request"
-                description="Describe your desired color or upload a reference image. Additional charges may apply."
-                showIcon
-                className="mb-2"
-              />
-              
-              <TextArea
-                placeholder="Describe the color you want (e.g., 'Deep burgundy with gold veins', RAL color code, Pantone number, etc.)"
-                value={specialColorRequest}
-                onChange={(e) => setSpecialColorRequest(e.target.value)}
-                rows={3}
-              />
-
-              <Upload {...uploadProps} listType="picture">
-                <Button icon={<UploadOutlined />} block>
-                  Upload Color Reference Image
-                </Button>
-              </Upload>
-
-              {specialColorFile && (
-                <div className="text-xs text-green-600 flex items-center gap-1">
-                  <CheckCircleOutlined />
-                  Reference image uploaded: {specialColorFile.name}
-                </div>
-              )}
-            </div>
-          )}
         </div>
 
         <Divider style={{ margin: "8px 0" }} />
@@ -292,13 +229,15 @@ function MaterialSelector({
             value={selectedFinish}
             onChange={setSelectedFinish}
             placeholder="Choose a finish"
-            style={{ width: '100%' }}
+            style={{ width: "100%" }}
           >
             {finishOptions.map((finish) => (
               <Option key={finish.id} value={finish.id}>
                 <div>
                   <span className="font-medium">{finish.name}</span>
-                  <span className="text-gray-500 ml-2">- {finish.description}</span>
+                  <span className="text-gray-500 ml-2">
+                    - {finish.description}
+                  </span>
                 </div>
               </Option>
             ))}
@@ -306,33 +245,59 @@ function MaterialSelector({
         </div>
 
         {/* Selection Summary */}
-        {(selectedMaterial || selectedThickness || selectedColor || specialColorRequest) && (
+        {(selectedMaterial ||
+          selectedThickness ||
+          selectedColor ||
+          specialColorRequest) && (
           <>
             <Divider style={{ margin: "8px 0" }} />
             <div className="bg-green-50 p-3 rounded-lg">
-              <div className="text-sm font-medium text-green-700 mb-2">Current Selection</div>
+              <div className="text-sm font-medium text-green-700 mb-2">
+                Current Selection
+              </div>
               <div className="space-y-1 text-sm">
                 {selectedMaterial && (
-                  <div>Material: <strong>{materials.find(m => m.id === selectedMaterial)?.name}</strong></div>
+                  <div>
+                    Material:{" "}
+                    <strong>
+                      {materials.find((m) => m.id === selectedMaterial)?.name}
+                    </strong>
+                  </div>
                 )}
                 {selectedThickness && (
-                  <div>Thickness: <strong>{selectedThickness}mm</strong></div>
+                  <div>
+                    Thickness: <strong>{selectedThickness}mm</strong>
+                  </div>
                 )}
                 {selectedColor && (
                   <div className="flex items-center gap-2">
-                    Color: 
-                    <div 
+                    Color:
+                    <div
                       className="w-4 h-4 rounded border"
-                      style={{ backgroundColor: standardColors.find(c => c.id === selectedColor)?.hex }}
+                      style={{
+                        backgroundColor: standardColors.find(
+                          (c) => c.id === selectedColor,
+                        )?.hex,
+                      }}
                     />
-                    <strong>{standardColors.find(c => c.id === selectedColor)?.name}</strong>
+                    <strong>
+                      {standardColors.find((c) => c.id === selectedColor)?.name}
+                    </strong>
                   </div>
                 )}
                 {specialColorRequest && (
-                  <div>Special Color: <strong>"{specialColorRequest.substring(0, 30)}..."</strong></div>
+                  <div>
+                    Special Color:{" "}
+                    <strong>"{specialColorRequest.substring(0, 30)}..."</strong>
+                  </div>
                 )}
                 {selectedFinish && (
-                  <div>Finish: <strong>{finishOptions.find(f => f.id === selectedFinish)?.name}</strong></div>
+                  <div>
+                    Finish:{" "}
+                    <strong>
+                      {finishOptions.find((f) => f.id === selectedFinish)?.name}
+                    </strong>
+                  </div>
                 )}
               </div>
             </div>

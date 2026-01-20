@@ -1,60 +1,19 @@
 "use client";
-import { useState, useRef, useEffect, useCallback } from "react";
-import { Stage, Layer, Line, Circle, Text, Group, Arc } from "react-konva";
-import {
-  Button,
-  Card,
-  Divider,
-  Space,
-  Tooltip,
-  Alert,
-  InputNumber,
-  Modal,
-  Select,
-  Input,
-  Upload,
-  message,
-} from "antd";
-import {
-  PlusOutlined,
-  DragOutlined,
-  DeleteOutlined,
-  ArrowUpOutlined,
-  ArrowDownOutlined,
-  ArrowLeftOutlined,
-  ArrowRightOutlined,
-  AimOutlined,
-  RadiusSettingOutlined,
-  BorderOutlined,
-  CheckCircleOutlined,
-} from "@ant-design/icons";
+import { useState, useRef, useEffect } from "react";
+import { Line } from "react-konva";
+import { Alert, Modal, message } from "antd";
 import { produce } from "immer";
-import FileOperations from "./_shapeComponents/FileOperations";
-import StatusBar from "./_shapeComponents/StatusBar";
-import MainToolbar from "./_shapeComponents/MainToolbar";
-import Settings from "./_shapeComponents/Settings";
-import ShapeProperties from "./_shapeComponents/ShapeProperties";
-import ShapeTemplates from "./_shapeComponents/ShapeTemplates";
-import CornerSettings from "./_shapeComponents/CornerSettings";
-import DrillingHoles from "./_shapeComponents/DrillingHoles";
-import MaterialSelector from "./_shapeComponents/MaterialSelector";
-import PricingPanel from "./_shapeComponents/PricingPanel";
-import DimensionInput from "./_shapeComponents/DimensionInput";
-import ValidationPanel from "./_shapeComponents/ValidationPanel";
-import StepIndicator from "./_shapeComponents/StepIndicator";
 import ShapeTemplate from "./ShapeTemplate";
 import { useShapeList } from "../api/shapeListApi";
 import { useSearchParams } from "next/navigation";
+import MainCanvasArea from "./_shapeComponents/MainCanvasArea";
+import LeftSidebar from "./_shapeComponents/LeftSidebar";
 
 const DxfEditor = () => {
   const searchParams = useSearchParams();
   const shapeId = searchParams.get("shapeId");
 
-  console.log("Shape ID:", shapeId);
-
   const { shapeList, isLoading, isError, mutate } = useShapeList();
-
-  console.log("shapeList:", shapeList);
 
   // State Management
   const [shapes, setShapes] = useState([]);
@@ -69,7 +28,6 @@ const DxfEditor = () => {
   const [snapToGrid, setSnapToGrid] = useState(true);
   const [showMeasurements, setShowMeasurements] = useState(true);
   const [stageSize, setStageSize] = useState({ width: 1200, height: 700 });
-  const [lineWidth, setLineWidth] = useState(2);
   const [toolMode, setToolMode] = useState("select");
   const [gridSize, setGridSize] = useState(0.5);
   const [moveIncrement, setMoveIncrement] = useState(0.5);
@@ -84,14 +42,13 @@ const DxfEditor = () => {
   const [isPlacingHole, setIsPlacingHole] = useState(false);
 
   // Corner Settings State
-  const [cornerSettings, setCornerSettings] = useState({}); // { pointIndex: { type: 'sharp' | 'radius', radius: 5 } }
+  const [cornerSettings, setCornerSettings] = useState({});
 
   // Material & Pricing State
   const [selectedMaterial, setSelectedMaterial] = useState(null);
   const [selectedThickness, setSelectedThickness] = useState(null);
   const [selectedColor, setSelectedColor] = useState(null);
   const [specialColorRequest, setSpecialColorRequest] = useState("");
-  const [specialColorFile, setSpecialColorFile] = useState(null);
 
   // Round by Drag State
   const [roundByDragActive, setRoundByDragActive] = useState(false);
@@ -109,7 +66,6 @@ const DxfEditor = () => {
 
   // Refs
   const stageRef = useRef();
-  const fileInputRef = useRef();
   const containerRef = useRef();
 
   useEffect(() => {
@@ -117,7 +73,7 @@ const DxfEditor = () => {
 
     // shapeId string → number
     const selectedShape = shapeList.find(
-      (shape) => shape.id === Number(shapeId)
+      (shape) => shape.id === Number(shapeId),
     );
 
     if (!selectedShape) return;
@@ -147,40 +103,6 @@ const DxfEditor = () => {
     });
     setCornerSettings(initialCornerSettings);
   }, [shapeId, shapeList]);
-
-  // Initialize with sample shapes
-  // useEffect(() => {
-  //   const sampleShapes = [
-  //     {
-  //       id: "shape-1",
-  //       type: "rectangle",
-  //       points: [
-  //         [291, 269],
-  //         [378, 132],
-  //         [597, 132],
-  //         [681, 270],
-  //         [681, 624],
-  //         [291, 624],
-  //       ],
-  //       color: "#1890ff",
-  //       strokeWidth: 2,
-  //       closed: true,
-  //       visible: true,
-  //       locked: false,
-  //       name: "Sample Rectangle",
-  //     },
-  //   ];
-  //   setShapes(sampleShapes);
-  //   updateHistory(sampleShapes);
-  //   calculateMeasurements(sampleShapes);
-
-  //   // Initialize corner settings
-  //   const initialCornerSettings = {};
-  //   sampleShapes[0].points.forEach((_, idx) => {
-  //     initialCornerSettings[idx] = { type: "sharp", radius: 0 };
-  //   });
-  //   setCornerSettings(initialCornerSettings);
-  // }, []);
 
   // Handle window resize
   useEffect(() => {
@@ -238,28 +160,7 @@ const DxfEditor = () => {
     setHistoryIndex(newHistory.length - 1);
   };
 
-  // Handler for when shapes are loaded
-  const handleShapesLoaded = (newShapes) => {
-    setShapes(newShapes);
-    updateHistory(newShapes);
-    calculateMeasurements(newShapes);
-    setSelectedShape(null);
-    setSelectedPoint(null);
-    setRoundingPoints([]);
-    setDrillingHoles([]);
-
-    // Reset corner settings
-    const initialCornerSettings = {};
-    if (newShapes.length > 0) {
-      newShapes[0].points.forEach((_, idx) => {
-        initialCornerSettings[idx] = { type: "sharp", radius: 0 };
-      });
-    }
-    setCornerSettings(initialCornerSettings);
-  };
-
   // ============= NEW: Shape Dragging Functions =============
-
   const handleShapeMouseDown = (e, shapeId) => {
     if (toolMode !== "select" && toolMode !== "move-shape") return;
 
@@ -515,7 +416,7 @@ const DxfEditor = () => {
           stroke="#e0e0e0"
           strokeWidth={0.5 / scale}
           listening={false}
-        />
+        />,
       );
     }
 
@@ -527,33 +428,14 @@ const DxfEditor = () => {
           stroke="#e0e0e0"
           strokeWidth={0.5 / scale}
           listening={false}
-        />
+        />,
       );
     }
 
     return gridLines;
   };
 
-  // Calculate bounding box for selected shape
-  const getSelectedShapeBoundingBox = () => {
-    if (!selectedShape) return null;
-
-    const shape = shapes.find((s) => s.id === selectedShape);
-    if (!shape || !shape.points.length) return null;
-
-    const xs = shape.points.map((p) => p[0]);
-    const ys = shape.points.map((p) => p[1]);
-
-    return {
-      minX: Math.min(...xs),
-      minY: Math.min(...ys),
-      maxX: Math.max(...xs),
-      maxY: Math.max(...ys),
-    };
-  };
-
   // ============== ROUND BY DRAG FUNCTIONS ==============
-
   const getMidpoint = (p1, p2) => {
     return {
       x: (p1[0] + p2[0]) / 2,
@@ -635,7 +517,7 @@ const DxfEditor = () => {
     if (!shape) return;
 
     const existingIndex = roundingPoints.findIndex(
-      (rp) => rp.shapeIndex === shapeIndex && rp.pointIndex === pointIndex
+      (rp) => rp.shapeIndex === shapeIndex && rp.pointIndex === pointIndex,
     );
 
     if (existingIndex !== -1) {
@@ -765,120 +647,6 @@ const DxfEditor = () => {
     setRoundingPoints([]);
   };
 
-  const renderRoundingMidpoint = () => {
-    if (!roundByDragActive || roundingPoints.length !== 2) return null;
-
-    const shape = shapes[roundingPoints[0].shapeIndex];
-    if (!shape) return null;
-
-    const p1 = shape.points[roundingPoints[0].pointIndex];
-    const p2 = shape.points[roundingPoints[1].pointIndex];
-    const midpoint = getMidpoint(p1, p2);
-
-    return (
-      <Group>
-        <Line
-          points={[p1[0], p1[1], p2[0], p2[1]]}
-          stroke="#ff4d4f"
-          strokeWidth={2 / scale}
-          dash={[5 / scale, 5 / scale]}
-          listening={false}
-        />
-
-        {isDraggingMidpoint && (
-          <Line
-            points={[
-              midpoint.x,
-              midpoint.y,
-              midpoint.x + getPerpendicularDirection(p1, p2).x * dragOffset,
-              midpoint.y + getPerpendicularDirection(p1, p2).y * dragOffset,
-            ]}
-            stroke="#52c41a"
-            strokeWidth={2 / scale}
-            listening={false}
-          />
-        )}
-
-        <Circle
-          x={
-            isDraggingMidpoint
-              ? midpoint.x + getPerpendicularDirection(p1, p2).x * dragOffset
-              : midpoint.x
-          }
-          y={
-            isDraggingMidpoint
-              ? midpoint.y + getPerpendicularDirection(p1, p2).y * dragOffset
-              : midpoint.y
-          }
-          radius={12 / scale}
-          fill="#52c41a"
-          stroke="#ffffff"
-          strokeWidth={3 / scale}
-          draggable={true}
-          onDragStart={handleMidpointDragStart}
-          onDragMove={handleMidpointDrag}
-          onDragEnd={handleMidpointDragEnd}
-          onMouseEnter={(e) => {
-            const container = e.target.getStage().container();
-            container.style.cursor = "ns-resize";
-          }}
-          onMouseLeave={(e) => {
-            const container = e.target.getStage().container();
-            container.style.cursor = "default";
-          }}
-        />
-
-        <Text
-          x={midpoint.x + 15 / scale}
-          y={midpoint.y - 10 / scale}
-          text="Drag to Round"
-          fontSize={12 / scale}
-          fill="#52c41a"
-          fontStyle="bold"
-          listening={false}
-        />
-
-        {isDraggingMidpoint && Math.abs(dragOffset) > 5 && (
-          <Text
-            x={
-              midpoint.x +
-              getPerpendicularDirection(p1, p2).x * dragOffset +
-              15 / scale
-            }
-            y={
-              midpoint.y +
-              getPerpendicularDirection(p1, p2).y * dragOffset -
-              10 / scale
-            }
-            text={`${dragOffset > 0 ? "+" : ""}${(dragOffset / 12).toFixed(
-              2
-            )}"`}
-            fontSize={11 / scale}
-            fill="#722ed1"
-            fontStyle="bold"
-            listening={false}
-          />
-        )}
-      </Group>
-    );
-  };
-
-  const renderPreviewArc = () => {
-    if (!previewArc || previewArc.points.length < 2) return null;
-    const flatPoints = previewArc.points.flat();
-    return (
-      <Line
-        points={flatPoints}
-        stroke="#52c41a"
-        strokeWidth={3 / scale}
-        lineCap="round"
-        lineJoin="round"
-        dash={[8 / scale, 4 / scale]}
-        listening={false}
-      />
-    );
-  };
-
   // Handle point click based on tool mode
   const handlePointClick = (e, shapeIndex, pointIndex) => {
     e.cancelBubble = true;
@@ -901,7 +669,7 @@ const DxfEditor = () => {
 
   const isPointSelectedForRounding = (shapeIndex, pointIndex) => {
     return roundingPoints.some(
-      (rp) => rp.shapeIndex === shapeIndex && rp.pointIndex === pointIndex
+      (rp) => rp.shapeIndex === shapeIndex && rp.pointIndex === pointIndex,
     );
   };
 
@@ -960,47 +728,6 @@ const DxfEditor = () => {
     return inside;
   };
 
-  // Render drilling holes
-  const renderDrillingHoles = () => {
-    return drillingHoles.map((hole) => (
-      <Group key={hole.id}>
-        <Circle
-          x={hole.x}
-          y={hole.y}
-          radius={hole.diameter * 2}
-          fill="#ff4d4f"
-          stroke="#ffffff"
-          strokeWidth={2 / scale}
-          draggable={toolMode === "select"}
-          onDragEnd={(e) => {
-            const newPos = e.target.position();
-            setDrillingHoles(
-              drillingHoles.map((h) =>
-                h.id === hole.id ? { ...h, x: newPos.x, y: newPos.y } : h
-              )
-            );
-          }}
-        />
-        <Circle
-          x={hole.x}
-          y={hole.y}
-          radius={hole.diameter}
-          fill="#ffffff"
-          listening={false}
-        />
-        <Text
-          x={hole.x + 15 / scale}
-          y={hole.y - 8 / scale}
-          text={`⌀${hole.diameter}mm`}
-          fontSize={10 / scale}
-          fill="#ff4d4f"
-          fontStyle="bold"
-          listening={false}
-        />
-      </Group>
-    ));
-  };
-
   // Validation
   const validateOrder = () => {
     const errors = [];
@@ -1013,7 +740,7 @@ const DxfEditor = () => {
     // Check drilling holes (minimum 2 required)
     if (drillingHoles.length < 2) {
       errors.push(
-        `Minimum 2 drilling holes required. Currently: ${drillingHoles.length}`
+        `Minimum 2 drilling holes required. Currently: ${drillingHoles.length}`,
       );
     }
 
@@ -1049,7 +776,7 @@ const DxfEditor = () => {
             corner.radius * 12 > distNext / 2
           ) {
             errors.push(
-              `Corner ${i + 1} radius is too large for the adjacent edges.`
+              `Corner ${i + 1} radius is too large for the adjacent edges.`,
             );
           }
         }
@@ -1058,33 +785,6 @@ const DxfEditor = () => {
 
     setValidationErrors(errors);
     return errors.length === 0;
-  };
-
-  // Handle next step
-  const handleNextStep = () => {
-    if (currentStep === 1 && shapes.length === 0) {
-      message.warning("Please draw or upload a shape first");
-      return;
-    }
-    if (currentStep === 2 && drillingHoles.length < 2) {
-      message.warning("Please add at least 2 drilling holes");
-      return;
-    }
-    if (currentStep === 3 && (!selectedMaterial || !selectedThickness)) {
-      message.warning("Please select material and thickness");
-      return;
-    }
-
-    if (currentStep < 5) {
-      setCurrentStep(currentStep + 1);
-    } else {
-      // Final validation
-      if (validateOrder()) {
-        setShowValidationModal(true);
-      } else {
-        message.error("Please fix validation errors before submitting");
-      }
-    }
   };
 
   // Export order data
@@ -1116,785 +816,114 @@ const DxfEditor = () => {
   return (
     <div className="grid grid-cols-7 gap-1">
       <div className="col-span-1">
-        <ShapeTemplate onShapeSelect={handleShapesLoaded} />
+        <ShapeTemplate
+          shapeList={shapeList}
+          isLoading={isLoading}
+          isError={isError}
+          mutate={mutate}
+        />
       </div>
       <div className="col-span-6">
         <div className="gap-6 p-4 bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen">
           <div className="grid grid-cols-12 gap-6">
             {/* Left Sidebar */}
-            <div className="col-span-4 space-y-4 overflow-y-auto max-h-screen">
-              {/* Step Indicator */}
-              <StepIndicator
-                currentStep={currentStep}
-                setCurrentStep={setCurrentStep}
-              />
-
-              {/* Step 1: Shape Drawing */}
-              {currentStep === 1 && (
-                <>
-                  {/* <FileOperations
-                stageRef={stageRef}
-                fileInputRef={fileInputRef}
-                onShapesLoaded={handleShapesLoaded}
-              /> */}
-
-                  {/* <ShapeTemplates onShapeSelect={handleShapesLoaded} /> */}
-
-                  {/* Editing Tools */}
-                  <Card
-                    title="🛠️ Drawing Tools"
-                    size="small"
-                    className="shadow-md"
-                  >
-                    <Space
-                      orientation="vertical"
-                      className="w-full"
-                      size="small"
-                    >
-                      <div className="grid grid-cols-4 gap-2">
-                        <Tooltip title="Move Shape (Drag entire shape)">
-                          <Button
-                            type={toolMode === "select" ? "primary" : "default"}
-                            icon={<DragOutlined />}
-                            onClick={() => setToolMode("select")}
-                            style={{ height: 40 }}
-                          >
-                            Move
-                          </Button>
-                        </Tooltip>
-                        <Tooltip title="Select Point">
-                          <Button
-                            type={
-                              toolMode === "select-point"
-                                ? "primary"
-                                : "default"
-                            }
-                            icon={<AimOutlined />}
-                            onClick={() => setToolMode("select-point")}
-                            style={{ height: 40 }}
-                          >
-                            Point
-                          </Button>
-                        </Tooltip>
-                        <Tooltip title="Add Point">
-                          <Button
-                            type={
-                              toolMode === "add-point" ? "primary" : "default"
-                            }
-                            icon={<PlusOutlined />}
-                            onClick={() => setToolMode("add-point")}
-                            style={{ height: 40 }}
-                          >
-                            Add
-                          </Button>
-                        </Tooltip>
-                        <Tooltip title="Delete Point">
-                          <Button
-                            type={
-                              toolMode === "delete-point"
-                                ? "primary"
-                                : "default"
-                            }
-                            icon={<DeleteOutlined />}
-                            onClick={() => setToolMode("delete-point")}
-                            style={{ height: 40 }}
-                          >
-                            Delete
-                          </Button>
-                        </Tooltip>
-                      </div>
-
-                      {toolMode === "select" && (
-                        <Alert
-                          type="info"
-                          title="🖐️ Click and drag the shape to move it"
-                          showIcon
-                        />
-                      )}
-
-                      <Divider style={{ margin: "8px 0" }}>Rounding</Divider>
-                      <Tooltip title="Round by Drag">
-                        <Button
-                          type={roundByDragActive ? "primary" : "default"}
-                          icon={<RadiusSettingOutlined />}
-                          onClick={toggleRoundByDrag}
-                          block
-                          style={{ height: 40 }}
-                        >
-                          🔵 Round by Drag
-                        </Button>
-                      </Tooltip>
-
-                      <Button
-                        icon={<BorderOutlined />}
-                        onClick={autoSquare}
-                        block
-                        style={{ height: 40 }}
-                      >
-                        📐 Auto-Square (90°)
-                      </Button>
-
-                      {roundByDragActive && (
-                        <Alert
-                          type={
-                            roundingPoints.length === 2 ? "success" : "info"
-                          }
-                          title={
-                            roundingPoints.length === 0
-                              ? "Step 1: Click first point"
-                              : roundingPoints.length === 1
-                              ? "Step 2: Click second adjacent point"
-                              : "Step 3: Drag the green midpoint"
-                          }
-                          showIcon
-                        />
-                      )}
-                    </Space>
-                  </Card>
-
-                  {/* Precision Movement */}
-                  {selectedPoint && toolMode === "select-point" && (
-                    <Card
-                      title="🎯 Precision Movement"
-                      size="small"
-                      className="shadow-md border-2 border-purple-400"
-                    >
-                      <Space
-                        orientation="vertical"
-                        className="w-full"
-                        size="small"
-                      >
-                        <Alert
-                          title={`Point ${selectedPoint.pointIndex + 1}`}
-                          description={`Position: (${Math.round(
-                            shapes[selectedPoint.shapeIndex]?.points[
-                              selectedPoint.pointIndex
-                            ][0]
-                          )}, ${Math.round(
-                            shapes[selectedPoint.shapeIndex]?.points[
-                              selectedPoint.pointIndex
-                            ][1]
-                          )})`}
-                          type="info"
-                          showIcon
-                        />
-
-                        <div>
-                          <label className="block text-sm font-medium mb-2">
-                            Move Increment: {moveIncrement}"
-                          </label>
-                          <InputNumber
-                            value={moveIncrement}
-                            onChange={(value) => setMoveIncrement(value || 0.5)}
-                            min={0.1}
-                            max={12}
-                            step={0.1}
-                            style={{ width: "100%" }}
-                          />
-                        </div>
-
-                        <div className="grid grid-cols-3 gap-2">
-                          <div></div>
-                          <Button
-                            type="primary"
-                            icon={<ArrowUpOutlined />}
-                            onClick={() =>
-                              movePoint(
-                                selectedPoint.shapeIndex,
-                                selectedPoint.pointIndex,
-                                "up"
-                              )
-                            }
-                            block
-                            size="small"
-                          />
-                          <div></div>
-
-                          <Button
-                            type="primary"
-                            icon={<ArrowLeftOutlined />}
-                            onClick={() =>
-                              movePoint(
-                                selectedPoint.shapeIndex,
-                                selectedPoint.pointIndex,
-                                "left"
-                              )
-                            }
-                            block
-                            size="small"
-                          />
-                          <div className="flex items-center justify-center text-xs font-medium bg-gray-100 rounded">
-                            {moveIncrement}"
-                          </div>
-                          <Button
-                            type="primary"
-                            icon={<ArrowRightOutlined />}
-                            onClick={() =>
-                              movePoint(
-                                selectedPoint.shapeIndex,
-                                selectedPoint.pointIndex,
-                                "right"
-                              )
-                            }
-                            block
-                            size="small"
-                          />
-
-                          <div></div>
-                          <Button
-                            type="primary"
-                            icon={<ArrowDownOutlined />}
-                            onClick={() =>
-                              movePoint(
-                                selectedPoint.shapeIndex,
-                                selectedPoint.pointIndex,
-                                "down"
-                              )
-                            }
-                            block
-                            size="small"
-                          />
-                          <div></div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-2 mt-2">
-                          <Button
-                            onClick={() => setSelectedPoint(null)}
-                            block
-                            size="small"
-                          >
-                            Deselect
-                          </Button>
-                          <Button
-                            danger
-                            onClick={() => {
-                              deletePoint(
-                                selectedPoint.shapeIndex,
-                                selectedPoint.pointIndex
-                              );
-                              setSelectedPoint(null);
-                            }}
-                            block
-                            size="small"
-                          >
-                            Delete
-                          </Button>
-                        </div>
-                      </Space>
-                    </Card>
-                  )}
-
-                  <DimensionInput
-                    shapes={shapes}
-                    updateShapes={updateShapes}
-                    unit={unit}
-                    setUnit={setUnit}
-                  />
-                </>
-              )}
-
-              {/* Step 2: Drilling Holes */}
-              {currentStep === 2 && (
-                <DrillingHoles
-                  drillingHoles={drillingHoles}
-                  setDrillingHoles={setDrillingHoles}
-                  isPlacingHole={isPlacingHole}
-                  setIsPlacingHole={setIsPlacingHole}
-                  setToolMode={setToolMode}
-                  shapes={shapes}
-                />
-              )}
-
-              {/* Step 3: Material Selection */}
-              {currentStep === 3 && (
-                <MaterialSelector
-                  selectedMaterial={selectedMaterial}
-                  setSelectedMaterial={setSelectedMaterial}
-                  selectedThickness={selectedThickness}
-                  setSelectedThickness={setSelectedThickness}
-                  selectedColor={selectedColor}
-                  setSelectedColor={setSelectedColor}
-                  specialColorRequest={specialColorRequest}
-                  setSpecialColorRequest={setSpecialColorRequest}
-                  specialColorFile={specialColorFile}
-                  setSpecialColorFile={setSpecialColorFile}
-                />
-              )}
-
-              {/* Step 4: Corner Settings */}
-              {currentStep === 4 && (
-                <CornerSettings
-                  shapes={shapes}
-                  cornerSettings={cornerSettings}
-                  setCornerSettings={setCornerSettings}
-                  selectedPoint={selectedPoint}
-                />
-              )}
-
-              {/* Step 5: Review & Pricing */}
-              {currentStep === 5 && (
-                <>
-                  <ValidationPanel
-                    validationErrors={validationErrors}
-                    validateOrder={validateOrder}
-                  />
-                  <PricingPanel
-                    totalArea={totalArea}
-                    totalPerimeter={totalPerimeter}
-                    selectedMaterial={selectedMaterial}
-                    selectedThickness={selectedThickness}
-                    selectedColor={selectedColor}
-                    specialColorRequest={specialColorRequest}
-                    cornerSettings={cornerSettings}
-                    shapes={shapes}
-                  />
-                </>
-              )}
-
-              {/* Shape Properties */}
-              {selectedShape && currentStep === 1 && (
-                <ShapeProperties
-                  shapes={shapes}
-                  selectedShape={selectedShape}
-                  updateShapes={updateShapes}
-                  setSelectedShape={setSelectedShape}
-                  setSelectedPoint={setSelectedPoint}
-                />
-              )}
-
-              {/* Settings */}
-              {currentStep === 1 && (
-                <Settings
-                  gridSize={gridSize}
-                  setGridSize={setGridSize}
-                  gridVisible={gridVisible}
-                  setGridVisible={setGridVisible}
-                  snapToGrid={snapToGrid}
-                  setSnapToGrid={setSnapToGrid}
-                  showMeasurements={showMeasurements}
-                  setShowMeasurements={setShowMeasurements}
-                />
-              )}
-
-              {/* Navigation Buttons */}
-              <Card size="small" className="shadow-md">
-                <div className="flex gap-2">
-                  {currentStep > 1 && (
-                    <Button
-                      onClick={() => setCurrentStep(currentStep - 1)}
-                      block
-                      size="large"
-                    >
-                      ← Previous
-                    </Button>
-                  )}
-                  <Button
-                    type="primary"
-                    onClick={handleNextStep}
-                    block
-                    size="large"
-                  >
-                    {currentStep === 5 ? "Submit Order" : "Next →"}
-                  </Button>
-                </div>
-              </Card>
-
-              {/* Delivery Info */}
-              <Card
-                size="small"
-                className="shadow-md bg-amber-50 border-amber-200"
-              >
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">🚚</span>
-                  <div>
-                    <div className="font-bold text-amber-800">
-                      Delivery Time
-                    </div>
-                    <div className="text-sm text-amber-700">
-                      3-4 weeks production time
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            </div>
+            <LeftSidebar
+              currentStep={currentStep}
+              setCurrentStep={setCurrentStep}
+              setShowValidationModal={setShowValidationModal}
+              toolMode={toolMode}
+              setToolMode={setToolMode}
+              roundByDragActive={roundByDragActive}
+              toggleRoundByDrag={toggleRoundByDrag}
+              autoSquare={autoSquare}
+              roundingPoints={roundingPoints}
+              shapes={shapes}
+              updateShapes={updateShapes}
+              selectedShape={selectedShape}
+              setSelectedShape={setSelectedShape}
+              selectedPoint={selectedPoint}
+              setSelectedPoint={setSelectedPoint}
+              movePoint={movePoint}
+              deletePoint={deletePoint}
+              moveIncrement={moveIncrement}
+              setMoveIncrement={setMoveIncrement}
+              unit={unit}
+              setUnit={setUnit}
+              gridSize={gridSize}
+              setGridSize={setGridSize}
+              gridVisible={gridVisible}
+              setGridVisible={setGridVisible}
+              snapToGrid={snapToGrid}
+              setSnapToGrid={setSnapToGrid}
+              showMeasurements={showMeasurements}
+              setShowMeasurements={setShowMeasurements}
+              drillingHoles={drillingHoles}
+              setDrillingHoles={setDrillingHoles}
+              isPlacingHole={isPlacingHole}
+              setIsPlacingHole={setIsPlacingHole}
+              selectedMaterial={selectedMaterial}
+              setSelectedMaterial={setSelectedMaterial}
+              selectedThickness={selectedThickness}
+              setSelectedThickness={setSelectedThickness}
+              selectedColor={selectedColor}
+              setSelectedColor={setSelectedColor}
+              specialColorRequest={specialColorRequest}
+              setSpecialColorRequest={setSpecialColorRequest}
+              validationErrors={validationErrors}
+              validateOrder={validateOrder}
+              totalArea={totalArea}
+              totalPerimeter={totalPerimeter}
+            />
 
             {/* Main Canvas Area */}
             <div className="col-span-8" ref={containerRef}>
-              <Card className="shadow-lg">
-                <MainToolbar
-                  setShapes={setShapes}
-                  setHistoryIndex={setHistoryIndex}
-                  historyIndex={historyIndex}
-                  history={history}
-                  scale={scale}
-                  setScale={setScale}
-                  shapes={shapes}
-                  totalArea={totalArea}
-                  totalPerimeter={totalPerimeter}
-                  calculateMeasurements={calculateMeasurements}
-                />
-
-                <div
-                  className="border-2 border-gray-300 rounded-lg overflow-hidden bg-white"
-                  style={{ position: "relative" }}
-                >
-                  <Stage
-                    ref={stageRef}
-                    width={stageSize.width}
-                    height={stageSize.height}
-                    scaleX={scale}
-                    scaleY={scale}
-                    onClick={handleStageClick}
-                    onMouseMove={handleShapeMouseMove}
-                    onMouseUp={handleShapeMouseUp}
-                  >
-                    <Layer>
-                      {gridVisible && renderGrid()}
-
-                      {shapes
-                        .filter((s) => s.visible)
-                        .map((shape, shapeIndex) => {
-                          const isSelected = shape.id === selectedShape;
-                          const isLocked = shape.locked;
-
-                          return (
-                            <Group key={shape.id}>
-                              <Line
-                                points={shape.points.flat()}
-                                stroke={isSelected ? "#722ed1" : shape.color}
-                                strokeWidth={
-                                  (shape.strokeWidth || lineWidth) / scale
-                                }
-                                closed={shape.closed}
-                                dash={
-                                  isLocked ? [10 / scale, 5 / scale] : undefined
-                                }
-                                fill={
-                                  shape.closed && isSelected
-                                    ? `${shape.color}20`
-                                    : undefined
-                                }
-                                onClick={(e) => {
-                                  if (!isLocked && toolMode === "select") {
-                                    setSelectedShape(shape.id);
-                                  }
-                                }}
-                                onTap={(e) => {
-                                  if (!isLocked && toolMode === "select") {
-                                    setSelectedShape(shape.id);
-                                  }
-                                }}
-                                onMouseDown={(e) => {
-                                  if (!isLocked && toolMode === "select") {
-                                    handleShapeMouseDown(e, shape.id);
-                                  }
-                                }}
-                                onMouseEnter={(e) => {
-                                  if (!isLocked && toolMode === "select") {
-                                    const container = e.target
-                                      .getStage()
-                                      .container();
-                                    container.style.cursor = "move";
-                                  }
-                                }}
-                                onMouseLeave={(e) => {
-                                  if (!isDraggingShape) {
-                                    const container = e.target
-                                      .getStage()
-                                      .container();
-                                    container.style.cursor = "default";
-                                  }
-                                }}
-                                listening={!isLocked}
-                              />
-
-                              {/* Corner indicators */}
-                              {shape.points.map((point, pointIndex) => {
-                                const corner = cornerSettings[pointIndex];
-                                if (
-                                  corner &&
-                                  corner.type === "radius" &&
-                                  corner.radius > 0
-                                ) {
-                                  return (
-                                    <Circle
-                                      key={`corner-indicator-${pointIndex}`}
-                                      x={point[0]}
-                                      y={point[1]}
-                                      radius={16 / scale}
-                                      fill="transparent"
-                                      stroke="#52c41a"
-                                      strokeWidth={2 / scale}
-                                      dash={[4 / scale, 4 / scale]}
-                                      listening={false}
-                                    />
-                                  );
-                                }
-                                return null;
-                              })}
-
-                              {(isSelected || roundByDragActive) &&
-                                !isLocked &&
-                                shape.points.map((point, pointIndex) => {
-                                  const isPointSelected =
-                                    selectedPoint?.shapeIndex === shapeIndex &&
-                                    selectedPoint?.pointIndex === pointIndex;
-
-                                  const isSelectedForRounding =
-                                    isPointSelectedForRounding(
-                                      shapeIndex,
-                                      pointIndex
-                                    );
-
-                                  const isDraggable = toolMode === "select";
-
-                                  let pointColor = "#722ed1";
-                                  if (isSelectedForRounding) {
-                                    pointColor = "#ff4d4f";
-                                  } else if (isPointSelected) {
-                                    pointColor = "#f5222d";
-                                  }
-
-                                  const corner = cornerSettings[pointIndex];
-                                  if (
-                                    corner &&
-                                    corner.type === "radius" &&
-                                    corner.radius > 0
-                                  ) {
-                                    pointColor = "#52c41a";
-                                  }
-
-                                  return (
-                                    <Group
-                                      key={`${shape.id}-point-${pointIndex}`}
-                                    >
-                                      <Circle
-                                        x={point[0]}
-                                        y={point[1]}
-                                        radius={
-                                          isPointSelected ||
-                                          isSelectedForRounding
-                                            ? 10 / scale
-                                            : 8 / scale
-                                        }
-                                        fill={pointColor}
-                                        stroke="#ffffff"
-                                        strokeWidth={2 / scale}
-                                        draggable={isDraggable}
-                                        onDragMove={(e) => {
-                                          if (isDraggable) {
-                                            handlePointDrag(
-                                              shapeIndex,
-                                              pointIndex,
-                                              e.target.position()
-                                            );
-                                          }
-                                        }}
-                                        onDragEnd={() => {
-                                          if (isDraggable) {
-                                            handlePointDragEnd();
-                                          }
-                                        }}
-                                        onMouseEnter={(e) => {
-                                          const container = e.target
-                                            .getStage()
-                                            .container();
-                                          if (toolMode === "delete-point") {
-                                            container.style.cursor =
-                                              "not-allowed";
-                                          } else if (
-                                            toolMode === "select-point" ||
-                                            toolMode === "round-by-drag"
-                                          ) {
-                                            container.style.cursor = "pointer";
-                                          } else if (toolMode === "select") {
-                                            container.style.cursor = "move";
-                                          } else {
-                                            container.style.cursor = "default";
-                                          }
-                                        }}
-                                        onMouseLeave={(e) => {
-                                          const container = e.target
-                                            .getStage()
-                                            .container();
-                                          container.style.cursor = "default";
-                                        }}
-                                        onClick={(e) =>
-                                          handlePointClick(
-                                            e,
-                                            shapeIndex,
-                                            pointIndex
-                                          )
-                                        }
-                                      />
-                                      {/* Point number label */}
-                                      <Text
-                                        x={point[0] + 10 / scale}
-                                        y={point[1] - 15 / scale}
-                                        text={`${pointIndex + 1}`}
-                                        fontSize={10 / scale}
-                                        fill="#666"
-                                        listening={false}
-                                      />
-                                    </Group>
-                                  );
-                                })}
-
-                              {isSelected &&
-                                !isLocked &&
-                                toolMode === "add-point" &&
-                                shape.points.map((point, segmentIndex) => {
-                                  if (
-                                    segmentIndex === shape.points.length - 1 &&
-                                    !shape.closed
-                                  )
-                                    return null;
-
-                                  const nextPoint =
-                                    shape.points[
-                                      (segmentIndex + 1) % shape.points.length
-                                    ];
-                                  const midX = (point[0] + nextPoint[0]) / 2;
-                                  const midY = (point[1] + nextPoint[1]) / 2;
-
-                                  return (
-                                    <Group key={`add-${segmentIndex}`}>
-                                      <Line
-                                        points={[...point, ...nextPoint]}
-                                        stroke="transparent"
-                                        strokeWidth={20 / scale}
-                                        onClick={(e) => {
-                                          e.cancelBubble = true;
-                                          const stage = e.target.getStage();
-                                          const pos =
-                                            stage.getPointerPosition();
-                                          const transform = stage
-                                            .getAbsoluteTransform()
-                                            .copy()
-                                            .invert();
-                                          const relativePos =
-                                            transform.point(pos);
-                                          addNewPoint(
-                                            shapeIndex,
-                                            segmentIndex,
-                                            relativePos
-                                          );
-                                        }}
-                                      />
-                                      <Circle
-                                        x={midX}
-                                        y={midY}
-                                        radius={6 / scale}
-                                        fill="#52c41a"
-                                        stroke="#ffffff"
-                                        strokeWidth={2 / scale}
-                                        opacity={0.7}
-                                        listening={false}
-                                      />
-                                    </Group>
-                                  );
-                                })}
-
-                              {showMeasurements &&
-                                isSelected &&
-                                shape.points.map((point, idx) => {
-                                  if (
-                                    idx === shape.points.length - 1 &&
-                                    !shape.closed
-                                  )
-                                    return null;
-
-                                  const nextPoint =
-                                    shape.points[
-                                      (idx + 1) % shape.points.length
-                                    ];
-                                  const midX = (point[0] + nextPoint[0]) / 2;
-                                  const midY = (point[1] + nextPoint[1]) / 2;
-                                  const distance = Math.sqrt(
-                                    Math.pow(nextPoint[0] - point[0], 2) +
-                                      Math.pow(nextPoint[1] - point[1], 2)
-                                  );
-
-                                  const distanceInUnit =
-                                    unit === "mm"
-                                      ? ((distance * 25.4) / 12).toFixed(1) +
-                                        "mm"
-                                      : ((distance * 2.54) / 12).toFixed(2) +
-                                        "cm";
-
-                                  return (
-                                    <Text
-                                      key={`measure-${idx}`}
-                                      x={midX}
-                                      y={midY - 15 / scale}
-                                      text={distanceInUnit}
-                                      fontSize={11 / scale}
-                                      fill="#000"
-                                      fontStyle="bold"
-                                      padding={4 / scale}
-                                      align="center"
-                                      listening={false}
-                                    />
-                                  );
-                                })}
-                            </Group>
-                          );
-                        })}
-
-                      {renderPreviewArc()}
-                      {renderRoundingMidpoint()}
-                      {renderDrillingHoles()}
-
-                      {selectedShape && getSelectedShapeBoundingBox() && (
-                        <Line
-                          points={[
-                            getSelectedShapeBoundingBox().minX,
-                            getSelectedShapeBoundingBox().minY,
-                            getSelectedShapeBoundingBox().maxX,
-                            getSelectedShapeBoundingBox().minY,
-                            getSelectedShapeBoundingBox().maxX,
-                            getSelectedShapeBoundingBox().maxY,
-                            getSelectedShapeBoundingBox().minX,
-                            getSelectedShapeBoundingBox().maxY,
-                            getSelectedShapeBoundingBox().minX,
-                            getSelectedShapeBoundingBox().minY,
-                          ]}
-                          stroke="#722ed1"
-                          strokeWidth={1 / scale}
-                          dash={[8 / scale, 4 / scale]}
-                          listening={false}
-                        />
-                      )}
-
-                      {/* Placing hole indicator */}
-                      {isPlacingHole && (
-                        <Text
-                          x={stageSize.width / scale / 2 - 100}
-                          y={20}
-                          text="🎯 Click inside shape to place drilling hole"
-                          fontSize={16 / scale}
-                          fill="#ff4d4f"
-                          fontStyle="bold"
-                          listening={false}
-                        />
-                      )}
-                    </Layer>
-                  </Stage>
-                </div>
-
-                <StatusBar
-                  shapes={shapes}
-                  selectedShape={selectedShape}
-                  selectedPoint={selectedPoint}
-                  toolMode={toolMode}
-                  gridSize={gridSize}
-                  moveIncrement={moveIncrement}
-                  history={history}
-                  historyIndex={historyIndex}
-                  drillingHoles={drillingHoles}
-                  unit={unit}
-                />
-              </Card>
+              <MainCanvasArea
+                setShapes={setShapes}
+                setHistoryIndex={setHistoryIndex}
+                historyIndex={historyIndex}
+                history={history}
+                scale={scale}
+                setScale={setScale}
+                shapes={shapes}
+                totalArea={totalArea}
+                totalPerimeter={totalPerimeter}
+                calculateMeasurements={calculateMeasurements}
+                stageRef={stageRef}
+                stageSize={stageSize}
+                handleStageClick={handleStageClick}
+                handleShapeMouseMove={handleShapeMouseMove}
+                handleShapeMouseUp={handleShapeMouseUp}
+                gridVisible={gridVisible}
+                renderGrid={renderGrid}
+                previewArc={previewArc}
+                roundingPoints={roundingPoints}
+                getMidpoint={getMidpoint}
+                isDraggingMidpoint={isDraggingMidpoint}
+                getPerpendicularDirection={getPerpendicularDirection}
+                handleMidpointDragStart={handleMidpointDragStart}
+                handleMidpointDrag={handleMidpointDrag}
+                handleMidpointDragEnd={handleMidpointDragEnd}
+                dragOffset={dragOffset}
+                setDrillingHoles={setDrillingHoles}
+                isPlacingHole={isPlacingHole}
+                roundByDragActive={roundByDragActive}
+                showMeasurements={showMeasurements}
+                handleShapeMouseDown={handleShapeMouseDown}
+                setSelectedShape={setSelectedShape}
+                isPointSelectedForRounding={isPointSelectedForRounding}
+                isDraggingShape={isDraggingShape}
+                handlePointDrag={handlePointDrag}
+                handlePointDragEnd={handlePointDragEnd}
+                handlePointClick={handlePointClick}
+                addNewPoint={addNewPoint}
+                selectedShape={selectedShape}
+                selectedPoint={selectedPoint}
+                toolMode={toolMode}
+                gridSize={gridSize}
+                moveIncrement={moveIncrement}
+                drillingHoles={drillingHoles}
+                unit={unit}
+              />
             </div>
           </div>
 
