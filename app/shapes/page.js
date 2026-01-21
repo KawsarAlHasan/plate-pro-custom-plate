@@ -1,13 +1,14 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import { Line } from "react-konva";
-import { Alert, Modal, message } from "antd";
+import { message } from "antd";
 import { produce } from "immer";
 import ShapeTemplate from "./ShapeTemplate";
 import { useShapeList } from "../api/shapeListApi";
 import { useSearchParams } from "next/navigation";
-import MainCanvasArea from "./_shapeComponents/MainCanvasArea";
 import LeftSidebar from "./_shapeComponents/LeftSidebar";
+import OrderConfirmation from "./_shapeComponents/OrderConfirmation";
+import MainCanvasArea from "./_shapeComponents/_mainCanvasArea/MainCanvasArea";
 
 const DxfEditor = () => {
   const searchParams = useSearchParams();
@@ -787,32 +788,6 @@ const DxfEditor = () => {
     return errors.length === 0;
   };
 
-  // Export order data
-  const exportOrderData = () => {
-    const orderData = {
-      shapes: shapes.map((s) => ({
-        points: s.points,
-        closed: s.closed,
-      })),
-      cornerSettings,
-      drillingHoles: drillingHoles.map((h) => ({
-        x: h.x,
-        y: h.y,
-        diameter: h.diameter,
-      })),
-      material: selectedMaterial,
-      thickness: selectedThickness,
-      color: selectedColor,
-      specialColorRequest,
-      totalArea,
-      totalPerimeter,
-      unit,
-    };
-
-    console.log("Order Data:", orderData);
-    return orderData;
-  };
-
   return (
     <div className="grid grid-cols-7 gap-1">
       <div className="col-span-1">
@@ -927,51 +902,17 @@ const DxfEditor = () => {
             </div>
           </div>
 
-          {/* Validation Modal */}
-          <Modal
-            title="✅ Order Confirmation"
-            open={showValidationModal}
-            onOk={() => {
-              const orderData = exportOrderData();
-              message.success("Order submitted successfully!");
-              setShowValidationModal(false);
-            }}
-            onCancel={() => setShowValidationModal(false)}
-            okText="Confirm Order"
-            cancelText="Go Back"
-            width={600}
-          >
-            <div className="space-y-4">
-              <Alert
-                type="success"
-                title="All validations passed!"
-                description="Your order is ready to be submitted."
-                showIcon
-              />
-
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h4 className="font-bold mb-2">Order Summary:</h4>
-                <ul className="space-y-1 text-sm">
-                  <li>📐 Shape Area: {totalArea.toFixed(2)} sq ft</li>
-                  <li>📏 Perimeter: {totalPerimeter.toFixed(2)} ft</li>
-                  <li>🕳️ Drilling Holes: {drillingHoles.length}</li>
-                  <li>🎨 Material: {selectedMaterial || "Not selected"}</li>
-                  <li>📊 Thickness: {selectedThickness || "Not selected"}</li>
-                  <li>
-                    🌈 Color:{" "}
-                    {selectedColor || specialColorRequest || "Not selected"}
-                  </li>
-                </ul>
-              </div>
-
-              <Alert
-                type="info"
-                title="Production Time: 3-4 weeks"
-                description="Final pricing may change after review."
-                showIcon
-              />
-            </div>
-          </Modal>
+          {/* Order Confirmation Modal */}
+          <OrderConfirmation
+            showValidationModal={showValidationModal}
+            setShowValidationModal={setShowValidationModal}
+            totalArea={totalArea}
+            totalPerimeter={totalPerimeter}
+            drillingHoles={drillingHoles}
+            selectedMaterial={selectedMaterial}
+            selectedThickness={selectedThickness}
+            selectedColor={selectedColor}
+          />
         </div>
       </div>
     </div>

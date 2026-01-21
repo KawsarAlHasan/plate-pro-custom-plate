@@ -1,15 +1,31 @@
 "use client";
-import { Card, Button, Space, InputNumber, Alert, Divider, Table, Popconfirm, message, Badge } from "antd";
-import { PlusOutlined, DeleteOutlined, AimOutlined, EditOutlined } from "@ant-design/icons";
+import {
+  Card,
+  Button,
+  Space,
+  InputNumber,
+  Alert,
+  Divider,
+  Table,
+  Popconfirm,
+  message,
+  Badge,
+} from "antd";
+import {
+  PlusOutlined,
+  DeleteOutlined,
+  AimOutlined,
+  EditOutlined,
+} from "@ant-design/icons";
 import React, { useState } from "react";
 
-function DrillingHoles({ 
-  drillingHoles, 
-  setDrillingHoles, 
-  isPlacingHole, 
-  setIsPlacingHole, 
+function DrillingHoles({
+  drillingHoles,
+  setDrillingHoles,
+  isPlacingHole,
+  setIsPlacingHole,
   setToolMode,
-  shapes 
+  shapes,
 }) {
   const [editingHole, setEditingHole] = useState(null);
   const [editX, setEditX] = useState(0);
@@ -27,7 +43,7 @@ function DrillingHoles({
 
   // Delete hole
   const deleteHole = (holeId) => {
-    setDrillingHoles(drillingHoles.filter(h => h.id !== holeId));
+    setDrillingHoles(drillingHoles.filter((h) => h.id !== holeId));
     message.success("Hole deleted");
   };
 
@@ -40,20 +56,23 @@ function DrillingHoles({
 
   // Save hole position
   const saveHolePosition = (holeId) => {
-    setDrillingHoles(drillingHoles.map(h => 
-      h.id === holeId ? { ...h, x: editX, y: editY } : h
-    ));
+    setDrillingHoles(
+      drillingHoles.map((h) =>
+        h.id === holeId ? { ...h, x: editX, y: editY } : h,
+      ),
+    );
     setEditingHole(null);
     message.success("Hole position updated");
   };
 
   // Calculate distance from edge
   const getDistanceFromEdge = (hole) => {
-    if (shapes.length === 0 || !shapes[0].points) return { top: 0, left: 0, right: 0, bottom: 0 };
-    
+    if (shapes.length === 0 || !shapes[0].points)
+      return { top: 0, left: 0, right: 0, bottom: 0 };
+
     const points = shapes[0].points;
-    const xs = points.map(p => p[0]);
-    const ys = points.map(p => p[1]);
+    const xs = points.map((p) => p[0]);
+    const ys = points.map((p) => p[1]);
     const minX = Math.min(...xs);
     const maxX = Math.max(...xs);
     const minY = Math.min(...ys);
@@ -69,20 +88,20 @@ function DrillingHoles({
 
   const columns = [
     {
-      title: '#',
-      dataIndex: 'index',
-      key: 'index',
+      title: "#",
+      dataIndex: "index",
+      key: "index",
       width: 40,
       render: (_, __, idx) => (
-        <Badge count={idx + 1} style={{ backgroundColor: '#1890ff' }} />
+        <Badge count={idx + 1} style={{ backgroundColor: "#1890ff" }} />
       ),
     },
     {
-      title: 'X',
-      dataIndex: 'x',
-      key: 'x',
+      title: "X",
+      dataIndex: "x",
+      key: "x",
       width: 80,
-      render: (x, record) => (
+      render: (x, record) =>
         editingHole === record.id ? (
           <InputNumber
             value={editX}
@@ -92,15 +111,14 @@ function DrillingHoles({
           />
         ) : (
           <span>{Math.round(x)}px</span>
-        )
-      ),
+        ),
     },
     {
-      title: 'Y',
-      dataIndex: 'y',
-      key: 'y',
+      title: "Y",
+      dataIndex: "y",
+      key: "y",
       width: 80,
-      render: (y, record) => (
+      render: (y, record) =>
         editingHole === record.id ? (
           <InputNumber
             value={editY}
@@ -110,28 +128,27 @@ function DrillingHoles({
           />
         ) : (
           <span>{Math.round(y)}px</span>
-        )
-      ),
+        ),
     },
     {
-      title: 'Actions',
-      key: 'actions',
+      title: "Actions",
+      key: "actions",
       width: 80,
       render: (_, record) => (
         <Space size="small">
           {editingHole === record.id ? (
-            <Button 
-              type="primary" 
-              size="small" 
+            <Button
+              type="primary"
+              size="small"
               onClick={() => saveHolePosition(record.id)}
             >
               Save
             </Button>
           ) : (
             <>
-              <Button 
-                size="small" 
-                icon={<EditOutlined />} 
+              <Button
+                size="small"
+                icon={<EditOutlined />}
                 onClick={() => startEditingHole(record)}
               />
               <Popconfirm
@@ -153,17 +170,17 @@ function DrillingHoles({
   const isValid = drillingHoles.length >= MIN_HOLES;
 
   return (
-    <Card 
+    <Card
       title={
         <div className="flex items-center justify-between">
           <span>🕳️ Drilling Holes</span>
-          <Badge 
-            count={drillingHoles.length} 
-            style={{ backgroundColor: isValid ? '#52c41a' : '#ff4d4f' }} 
+          <Badge
+            count={drillingHoles.length}
+            style={{ backgroundColor: isValid ? "#52c41a" : "#ff4d4f" }}
           />
         </div>
       }
-      size="small" 
+      size="small"
       className="shadow-md"
     >
       <Space orientation="vertical" className="w-full" size="small">
@@ -171,8 +188,8 @@ function DrillingHoles({
         {!isValid ? (
           <Alert
             type="warning"
-            title={`${holesNeeded} more hole${holesNeeded > 1 ? 's' : ''} required`}
-            description="Minimum 2 drilling holes are required for mounting."
+            title={`${holesNeeded} more hole${holesNeeded > 1 ? "s" : ""} required`}
+            description="Minimum 1 drilling holes are required for mounting."
             showIcon
           />
         ) : (
@@ -185,15 +202,21 @@ function DrillingHoles({
 
         {/* Hole Specifications */}
         <div className="bg-blue-50 p-3 rounded-lg">
-          <div className="text-sm font-medium text-blue-700 mb-1">Hole Specifications</div>
+          <div className="text-sm font-medium text-blue-700 mb-1">
+            Hole Specifications
+          </div>
           <div className="grid grid-cols-2 gap-2 text-sm">
             <div>
               <span className="text-gray-500">Diameter:</span>
-              <span className="ml-2 font-medium">{HOLE_DIAMETER}mm (fixed)</span>
+              <span className="ml-2 font-medium">
+                {HOLE_DIAMETER}mm (fixed)
+              </span>
             </div>
             <div>
               <span className="text-gray-500">Placed:</span>
-              <span className="ml-2 font-medium">{drillingHoles.length} holes</span>
+              <span className="ml-2 font-medium">
+                {drillingHoles.length} holes
+              </span>
             </div>
           </div>
         </div>
@@ -208,7 +231,9 @@ function DrillingHoles({
           disabled={isPlacingHole}
           className={isPlacingHole ? "animate-pulse" : ""}
         >
-          {isPlacingHole ? "Click on Canvas to Place Hole..." : "Add Drilling Hole"}
+          {isPlacingHole
+            ? "Click on Canvas to Place Hole..."
+            : "Add Drilling Hole"}
         </Button>
 
         {isPlacingHole && (
@@ -260,79 +285,8 @@ function DrillingHoles({
             </div>
           </>
         )}
-
-        {/* Quick Position Input */}
-        {drillingHoles.length < 4 && (
-          <>
-            <Divider style={{ margin: "8px 0" }}>Quick Add by Position</Divider>
-            <QuickHoleInput 
-              drillingHoles={drillingHoles}
-              setDrillingHoles={setDrillingHoles}
-              shapes={shapes}
-            />
-          </>
-        )}
       </Space>
     </Card>
-  );
-}
-
-// Quick Hole Input Component
-function QuickHoleInput({ drillingHoles, setDrillingHoles, shapes }) {
-  const [xOffset, setXOffset] = useState(50);
-  const [yOffset, setYOffset] = useState(50);
-
-  const addHoleByOffset = () => {
-    if (shapes.length === 0 || !shapes[0].points) {
-      message.warning("No shape available");
-      return;
-    }
-
-    const points = shapes[0].points;
-    const xs = points.map(p => p[0]);
-    const ys = points.map(p => p[1]);
-    const minX = Math.min(...xs);
-    const minY = Math.min(...ys);
-
-    const newHole = {
-      id: `hole-${Date.now()}`,
-      x: minX + xOffset,
-      y: minY + yOffset,
-      diameter: 6,
-    };
-
-    setDrillingHoles([...drillingHoles, newHole]);
-    message.success("Hole added at specified position");
-  };
-
-  return (
-    <div className="bg-gray-50 p-3 rounded-lg">
-      <div className="grid grid-cols-2 gap-2 mb-2">
-        <div>
-          <label className="text-xs text-gray-500">X from left edge (px)</label>
-          <InputNumber
-            value={xOffset}
-            onChange={(val) => setXOffset(val || 50)}
-            min={10}
-            style={{ width: "100%" }}
-            size="small"
-          />
-        </div>
-        <div>
-          <label className="text-xs text-gray-500">Y from top edge (px)</label>
-          <InputNumber
-            value={yOffset}
-            onChange={(val) => setYOffset(val || 50)}
-            min={10}
-            style={{ width: "100%" }}
-            size="small"
-          />
-        </div>
-      </div>
-      <Button onClick={addHoleByOffset} size="small" block>
-        Add Hole at Position
-      </Button>
-    </div>
   );
 }
 

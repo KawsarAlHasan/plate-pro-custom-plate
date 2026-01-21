@@ -8,7 +8,6 @@ import {
 } from "@ant-design/icons";
 import { Button, Card } from "antd";
 import { showToast } from "nextjs-toast-notify";
-import React from "react";
 
 function ShapeProperties({
   shapes,

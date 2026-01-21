@@ -70,14 +70,14 @@ function MainToolbar({
         <Tooltip title="Zoom In">
           <Button
             icon={<ZoomInOutlined />}
-            onClick={() => setScale(Math.min(3, scale * 1.2))}
+            onClick={() => setScale(Math.min(5, scale * 1.2))}
             size="large"
           />
         </Tooltip>
         <Tooltip title="Zoom Out">
           <Button
             icon={<ZoomOutOutlined />}
-            onClick={() => setScale(Math.max(0.1, scale / 1.2))}
+            onClick={() => setScale(Math.max(0.05, scale / 1.2))}
             size="large"
           />
         </Tooltip>

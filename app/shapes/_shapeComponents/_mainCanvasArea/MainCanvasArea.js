@@ -1,8 +1,6 @@
 "use client";
 import { Stage, Layer, Line, Circle, Text, Group } from "react-konva";
 import { Card } from "antd";
-
-import { produce } from "immer";
 import MainToolbar from "./MainToolbar";
 import StatusBar from "./StatusBar";
 
@@ -537,8 +535,6 @@ function MainCanvasArea({
           moveIncrement={moveIncrement}
           history={history}
           historyIndex={historyIndex}
-          drillingHoles={drillingHoles}
-          unit={unit}
         />
       </Card>
     </div>

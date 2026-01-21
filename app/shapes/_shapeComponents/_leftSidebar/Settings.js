@@ -1,7 +1,5 @@
-"use client";
-import { Card, InputNumber, Space, Switch, Divider, Slider } from "antd";
+import { Card, Space, Switch, Divider, Slider } from "antd";
 import { SettingOutlined } from "@ant-design/icons";
-import React from "react";
 
 function Settings({
   gridSize,
@@ -12,8 +10,6 @@ function Settings({
   setSnapToGrid,
   showMeasurements,
   setShowMeasurements,
-  showAngles,
-  setShowAngles,
 }) {
   return (
     <Card
@@ -99,73 +95,7 @@ function Settings({
               unCheckedChildren="OFF"
             />
           </div>
-
-          {/* NEW: Show Angles Toggle */}
-          {/* <div className="flex justify-between items-center p-2 bg-blue-50 rounded hover:bg-blue-100 transition-colors border border-blue-200">
-            <div>
-              <div className="text-sm font-medium text-blue-700">
-                📐 Show Angles
-              </div>
-              <div className="text-xs text-blue-500">
-                Display corner angles in degrees
-              </div>
-            </div>
-            <Switch
-              checked={showAngles}
-              onChange={setShowAngles}
-              checkedChildren="ON"
-              unCheckedChildren="OFF"
-            />
-          </div> */}
         </div>
-
-        {/* Quick Presets */}
-        {/* <Divider style={{ margin: "8px 0" }}>Quick Presets</Divider>
-        <div className="grid grid-cols-2 gap-2">
-          <button
-            onClick={() => {
-              setGridSize(0.25);
-              setSnapToGrid(true);
-              setShowMeasurements(true);
-              if (setShowAngles) setShowAngles(true);
-            }}
-            className="p-2 text-xs bg-blue-50 hover:bg-blue-100 rounded transition-colors text-blue-700"
-          >
-            🔬 Precise Mode
-          </button>
-          <button
-            onClick={() => {
-              setGridSize(1);
-              setSnapToGrid(false);
-              setShowMeasurements(false);
-              if (setShowAngles) setShowAngles(false);
-            }}
-            className="p-2 text-xs bg-green-50 hover:bg-green-100 rounded transition-colors text-green-700"
-          >
-            ✏️ Freehand Mode
-          </button>
-          <button
-            onClick={() => {
-              setGridVisible(true);
-              setShowMeasurements(true);
-              if (setShowAngles) setShowAngles(true);
-              setGridSize(0.5);
-            }}
-            className="p-2 text-xs bg-purple-50 hover:bg-purple-100 rounded transition-colors text-purple-700"
-          >
-            📐 Design Mode
-          </button>
-          <button
-            onClick={() => {
-              setGridVisible(false);
-              setShowMeasurements(false);
-              if (setShowAngles) setShowAngles(false);
-            }}
-            className="p-2 text-xs bg-gray-100 hover:bg-gray-200 rounded transition-colors text-gray-700"
-          >
-            👁️ Preview Mode
-          </button>
-        </div> */}
       </Space>
     </Card>
   );

@@ -21,14 +21,14 @@ import {
   RadiusSettingOutlined,
   BorderOutlined,
 } from "@ant-design/icons";
-import StepIndicator from "./StepIndicator";
-import Settings from "./Settings";
-import ShapeProperties from "./ShapeProperties";
-import DrillingHoles from "./DrillingHoles";
-import MaterialSelector from "./MaterialSelector";
-import PricingPanel from "./PricingPanel";
-import DimensionInput from "./DimensionInput";
-import ValidationPanel from "./ValidationPanel";
+import StepIndicator from "./_leftSidebar/StepIndicator";
+import Settings from "./_leftSidebar/Settings";
+import ShapeProperties from "./_leftSidebar/ShapeProperties";
+import DrillingHoles from "./_leftSidebar/DrillingHoles";
+import MaterialSelector from "./_leftSidebar/MaterialSelector";
+import PricingPanel from "./_leftSidebar/PricingPanel";
+import DimensionInput from "./_leftSidebar/DimensionInput";
+import ValidationPanel from "./_leftSidebar/ValidationPanel";
 
 function LeftSidebar({
   /* Steps */
