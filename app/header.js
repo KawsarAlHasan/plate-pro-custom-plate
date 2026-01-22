@@ -14,6 +14,7 @@ import {
   ShoppingCartOutlined,
 } from "@ant-design/icons";
 import { useMyProfile } from "./api/userApi";
+import MyProfile from "./_component/MyProfile";
 
 export default function Header() {
   const router = useRouter();
@@ -48,9 +49,7 @@ export default function Header() {
     {
       key: "profile",
       label: (
-        <Link href="/profile" className="flex items-center gap-2">
-          <UserOutlined /> My Profile
-        </Link>
+        <MyProfile profileData={profileData} mutate={mutate} isMobile={false} />
       ),
     },
     {
@@ -61,14 +60,14 @@ export default function Header() {
         </Link>
       ),
     },
-    {
-      key: "settings",
-      label: (
-        <Link href="/settings" className="flex items-center gap-2">
-          <SettingOutlined /> Settings
-        </Link>
-      ),
-    },
+    // {
+    //   key: "settings",
+    //   label: (
+    //     <Link href="/settings" className="flex items-center gap-2">
+    //       <SettingOutlined /> Settings
+    //     </Link>
+    //   ),
+    // },
     {
       type: "divider",
     },
@@ -236,13 +235,13 @@ export default function Header() {
           {token && (
             <>
               <div className="border-t border-gray-200 my-4"></div>
-              <Link
-                href="/profile"
-                className="text-gray-700 hover:text-gray-900 hover:bg-gray-50 font-medium px-4 py-3 rounded-lg transition-colors duration-200 flex items-center gap-2"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                <UserOutlined /> My Profile
-              </Link>
+
+              <MyProfile
+                profileData={profileData}
+                mutate={mutate}
+                isMobile={true}
+              />
+
               <Link
                 href="/orders"
                 className="text-gray-700 hover:text-gray-900 hover:bg-gray-50 font-medium px-4 py-3 rounded-lg transition-colors duration-200 flex items-center gap-2"
@@ -251,13 +250,13 @@ export default function Header() {
                 <ShoppingCartOutlined /> My Orders
               </Link>
 
-              <Link
+              {/* <Link
                 href="/settings"
                 className="text-gray-700 hover:text-gray-900 hover:bg-gray-50 font-medium px-4 py-3 rounded-lg transition-colors duration-200 flex items-center gap-2"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 <SettingOutlined /> Settings
-              </Link>
+              </Link> */}
               <div className="border-t border-gray-200 my-4"></div>
               <button
                 onClick={() => {

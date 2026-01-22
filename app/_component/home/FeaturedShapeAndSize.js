@@ -7,12 +7,26 @@ import "swiper/css/navigation";
 import { Autoplay, Pagination, Navigation } from "swiper/modules";
 import Link from "next/link";
 import { useShapeList } from "../../api/shapeListApi";
-import { Image } from "antd";
+import { Button, Image } from "antd";
+import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
+import { useAuthModal } from "../../contact/AuthModalContext";
 
 export default function FeaturedShapeAndSize() {
   const { shapeList, isLoading, isError, mutate } = useShapeList();
+  const { openAuthModal } = useAuthModal();
 
   const [swiperRef, setSwiperRef] = useState(null);
+
+  const router = useRouter();
+
+  const handleStart = (id) => {
+    if (Cookies.get("token") !== undefined) {
+      router.push(`/shapes?shapeId=${id}`);
+    } else {
+      openAuthModal();
+    }
+  };
 
   return (
     <>
@@ -58,11 +72,12 @@ export default function FeaturedShapeAndSize() {
                       EUR
                     </p>
                   </div>
-                  <Link href={`/shapes?shapeId=${item?.id}`}>
-                    <div className="w-full text-center bg-black text-white py-2">
-                      <span>Get started</span>
-                    </div>
-                  </Link>
+                  <Button
+                    onClick={() => handleStart(item?.id)}
+                    className="w-full! text-lg! py-5! border-0! bg-black! text-white!"
+                  >
+                    Get started
+                  </Button>
                 </div>
               </SwiperSlide>
             ))}

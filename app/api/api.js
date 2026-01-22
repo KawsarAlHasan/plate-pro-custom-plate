@@ -32,6 +32,13 @@ export const fetcherWithTokenPatch = (url, data) => {
   }).then((res) => res.data);
 };
 
+export const fetcherWithTokenPut = (url, data) => {
+  const token = Cookies.get("token");
+  return API.put(url, data, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  }).then((res) => res.data);
+};
+
 export const fetcherWithTokenPostFormData = (url, formData) => {
   const token = Cookies.get("token");
   return API.post(url, formData, {
