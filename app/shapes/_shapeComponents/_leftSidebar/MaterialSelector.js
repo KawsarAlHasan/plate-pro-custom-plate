@@ -1,86 +1,18 @@
 "use client";
-import {
-  Card,
-  Button,
-  Space,
-  Select,
-  Input,
-  Upload,
-  Alert,
-  Divider,
-  Radio,
-  Image,
-  message,
-  Tag,
-} from "antd";
-import { UploadOutlined, CheckCircleOutlined } from "@ant-design/icons";
-import React, { useState } from "react";
+import { Card, Button, Space, Select, Divider, Radio } from "antd";
+import { CheckCircleOutlined } from "@ant-design/icons";
+import { useState } from "react";
+import { useMaterialList } from "../../../api/shapeListApi";
 
 const { Option } = Select;
-const { TextArea } = Input;
-
-// Material Options
-const materials = [
-  {
-    id: "granite",
-    name: "Granite",
-    description: "Natural stone, durable and heat resistant",
-    priceMultiplier: 1.0,
-    icon: "🪨",
-  },
-  {
-    id: "quartz",
-    name: "Quartz",
-    description: "Engineered stone, non-porous and low maintenance",
-    priceMultiplier: 1.2,
-    icon: "💎",
-  },
-  {
-    id: "marble",
-    name: "Marble",
-    description: "Elegant natural stone with unique veining",
-    priceMultiplier: 1.5,
-    icon: "🏛️",
-  },
-  {
-    id: "solid-surface",
-    name: "Solid Surface",
-    description: "Seamless, repairable, various colors",
-    priceMultiplier: 0.8,
-    icon: "📋",
-  },
-  {
-    id: "laminate",
-    name: "Laminate",
-    description: "Affordable, wide variety of patterns",
-    priceMultiplier: 0.5,
-    icon: "📄",
-  },
-  {
-    id: "stainless-steel",
-    name: "Stainless Steel",
-    description: "Professional grade, hygienic",
-    priceMultiplier: 1.3,
-    icon: "🔩",
-  },
-];
-
-// Thickness Options (in mm)
-const thicknessOptions = [
-  { value: 12, label: "12mm", description: "Standard thin" },
-  { value: 20, label: "20mm", description: "Standard" },
-  { value: 30, label: "30mm", description: "Premium" },
-  { value: 40, label: "40mm", description: "Extra thick" },
-  { value: 50, label: "50mm", description: "Ultra premium" },
-];
 
 // Standard Colors
 const standardColors = [
-  { id: "white", name: "Arctic White", hex: "#FFFFFF", popular: true },
+  { id: "white", name: "Arctic White", hex: "#FFFFFF" },
   { id: "cream", name: "Cream Beige", hex: "#F5F5DC" },
-  { id: "gray", name: "Stone Gray", hex: "#808080", popular: true },
+  { id: "gray", name: "Stone Gray", hex: "#808080" },
   { id: "charcoal", name: "Charcoal", hex: "#36454F" },
-  { id: "black", name: "Absolute Black", hex: "#1a1a1a", popular: true },
+  { id: "black", name: "Absolute Black", hex: "#1a1a1a" },
   { id: "brown", name: "Warm Brown", hex: "#8B4513" },
   { id: "navy", name: "Navy Blue", hex: "#000080" },
   { id: "green", name: "Forest Green", hex: "#228B22" },
@@ -107,7 +39,15 @@ function MaterialSelector({
   specialColorRequest,
   setSpecialColorRequest,
 }) {
+  const { materialList, isLoading, isError, mutate } = useMaterialList();
+
   const [selectedFinish, setSelectedFinish] = useState(null);
+
+  // Get variants for selected material
+  const selectedMaterialData = materialList?.find(
+    (m) => m.id === selectedMaterial,
+  );
+  const availableVariants = selectedMaterialData?.variants || [];
 
   return (
     <Card title="🎨 Material & Color" size="small" className="shadow-md">
@@ -115,8 +55,8 @@ function MaterialSelector({
         {/* Material Selection */}
         <div>
           <div className="text-sm font-medium mb-2">Select Material</div>
-          <div className="grid grid-cols-2 gap-2">
-            {materials.map((material) => (
+          <div className="grid grid-cols-3 gap-2">
+            {materialList?.map((material) => (
               <Button
                 key={material.id}
                 type={selectedMaterial === material.id ? "primary" : "default"}
@@ -129,12 +69,15 @@ function MaterialSelector({
                 block
               >
                 <div className="flex items-start gap-2">
-                  <span className="text-xl">{material.icon}</span>
+                  <img
+                    className="w-5 h-5"
+                    src={material.icon}
+                    alt={material?.name}
+                  />
                   <div className="flex-1 min-w-0">
                     <div className="font-medium text-sm truncate">
                       {material.name}
                     </div>
-                    {/* <div className="text-xs opacity-70 truncate">{material.description}</div> */}
                   </div>
                 </div>
               </Button>
@@ -143,40 +86,44 @@ function MaterialSelector({
           {selectedMaterial && (
             <div className="mt-2 text-xs text-green-600 flex items-center gap-1">
               <CheckCircleOutlined />
-              {materials.find((m) => m.id === selectedMaterial)?.name} selected
+              {materialList?.find((m) => m.id === selectedMaterial)?.name}{" "}
+              selected
             </div>
           )}
         </div>
 
-        <Divider style={{ margin: "8px 0" }} />
-
-        {/* Thickness Selection */}
-        <div>
-          <div className="text-sm font-medium mb-2">Select Thickness</div>
-          <Radio.Group
-            value={selectedThickness}
-            onChange={(e) => setSelectedThickness(e.target.value)}
-            className="w-full"
-          >
-            <div className="grid grid-cols-5 gap-1">
-              {thicknessOptions.map((thickness) => (
-                <Radio.Button
-                  key={thickness.value}
-                  value={thickness.value}
-                  className="text-center"
-                  style={{ width: "100%" }}
-                >
-                  <div>
-                    <div className="font-medium">{thickness.label}</div>
-                    <div className="text-xs opacity-70">
-                      {thickness.description}
-                    </div>
-                  </div>
-                </Radio.Button>
-              ))}
-            </div>
-          </Radio.Group>
-        </div>
+        {/* Thickness/Variant Selection - Show only if material is selected and has variants */}
+        {selectedMaterial && availableVariants.length > 0 && (
+          <div>
+            <Divider style={{ margin: "8px 0" }} />
+            <div className="text-sm font-medium mb-2">Select Thickness</div>
+            <Radio.Group
+              value={selectedThickness}
+              onChange={(e) => setSelectedThickness(e.target.value)}
+              className="w-full"
+            >
+              <div className="grid grid-cols-5 gap-2">
+                {availableVariants
+                  .filter((variant) => variant.is_active)
+                  .map((variant) => (
+                    <Radio.Button
+                      key={variant.id}
+                      value={variant.id}
+                      className="text-center"
+                      style={{ width: "100%" }}
+                    >
+                      <div>
+                        <div className="font-medium">{variant.name}</div>
+                        <div className="text-xs opacity-70">
+                          ${parseFloat(variant.price).toFixed(2)}/m²
+                        </div>
+                      </div>
+                    </Radio.Button>
+                  ))}
+              </div>
+            </Radio.Group>
+          </div>
+        )}
 
         <Divider style={{ margin: "8px 0" }} />
 
@@ -207,14 +154,6 @@ function MaterialSelector({
                 <div className="text-xs text-center mt-1 truncate">
                   {color.name}
                 </div>
-                {color.popular && (
-                  <Tag
-                    color="gold"
-                    className="absolute -top-1 -right-1 text-xs px-1"
-                  >
-                    Hot
-                  </Tag>
-                )}
               </div>
             ))}
           </div>
@@ -260,7 +199,10 @@ function MaterialSelector({
                   <div>
                     Material:{" "}
                     <strong>
-                      {materials.find((m) => m.id === selectedMaterial)?.name}
+                      {
+                        materialList?.find((m) => m.id === selectedMaterial)
+                          ?.name
+                      }
                     </strong>
                   </div>
                 )}

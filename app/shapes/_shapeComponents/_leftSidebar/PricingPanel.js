@@ -1,11 +1,7 @@
 "use client";
-import { Card, Space, Divider, Alert, Statistic, Tag, Tooltip } from "antd";
-import {
-  DollarOutlined,
-  InfoCircleOutlined,
-  CalculatorOutlined,
-} from "@ant-design/icons";
-import React, { useMemo } from "react";
+import { Card, Space, Divider, Alert, Tag } from "antd";
+import { InfoCircleOutlined, CalculatorOutlined } from "@ant-design/icons";
+import { useMemo } from "react";
 
 // Pricing Configuration
 const PRICING_CONFIG = {
@@ -49,7 +45,6 @@ function PricingPanel({
   selectedMaterial,
   selectedThickness,
   selectedColor,
-  specialColorRequest,
   shapes,
 }) {
   // Calculate pricing
@@ -95,16 +90,6 @@ function PricingPanel({
       subtotal += colorAdjustment;
     }
 
-    // Special color surcharge
-    if (specialColorRequest) {
-      breakdown.push({
-        item: "Special Color Request",
-        calculation: "Custom color handling fee",
-        amount: PRICING_CONFIG.specialColorSurcharge,
-      });
-      subtotal += PRICING_CONFIG.specialColorSurcharge;
-    }
-
     // Complex shape multiplier
     const pointCount = shapes[0]?.points?.length || 0;
     if (pointCount > 6) {
@@ -139,14 +124,19 @@ function PricingPanel({
       finalTotal,
       minimumApplied,
     };
-  }, [
+  }, [totalArea, selectedMaterial, selectedThickness, selectedColor, shapes]);
+
+  console.log(
     totalArea,
+    totalPerimeter,
     selectedMaterial,
+    "selectedMaterial",
     selectedThickness,
+    "selectedThickness",
     selectedColor,
-    specialColorRequest,
     shapes,
-  ]);
+    "pricing panel",
+  );
 
   return (
     <Card

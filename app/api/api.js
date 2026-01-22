@@ -2,8 +2,8 @@
 import Cookies from "js-cookie";
 import axios from "axios";
 
-export const BASE_URL = "https://plateapi.dsrt321.online";
-// export const BASE_URL = "http://10.10.7.76:14030";
+// export const BASE_URL = "https://plateapi.dsrt321.online";
+export const BASE_URL = "http://10.10.7.76:14030";
 
 export const API = axios.create({
   baseURL: BASE_URL,

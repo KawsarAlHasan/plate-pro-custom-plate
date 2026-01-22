@@ -14,3 +14,16 @@ export const useShapeList = () => {
     mutate,
   };
 };
+
+export const useMaterialList = () => {
+  const { data, error, mutate } = useSWR(
+    "/api/services/materials/",
+    fetcher
+  );
+  return {
+    materialList: data,
+    isLoading: !data && !error,
+    isError: error,
+    mutate,
+  };
+};
