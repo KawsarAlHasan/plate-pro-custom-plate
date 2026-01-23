@@ -41,6 +41,7 @@ const PRICING_CONFIG = {
 
 function PricingPanel({
   totalArea,
+  drillingHoles,
   totalPerimeter,
   selectedMaterial,
   selectedThickness,

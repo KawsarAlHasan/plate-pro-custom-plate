@@ -396,6 +396,7 @@ function LeftSidebar({
           />
           <PricingPanel
             totalArea={totalArea}
+            drillingHoles={drillingHoles}
             totalPerimeter={totalPerimeter}
             selectedMaterial={selectedMaterial}
             selectedThickness={selectedThickness}
