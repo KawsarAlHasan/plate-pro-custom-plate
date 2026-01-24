@@ -97,39 +97,46 @@ function DrillingHoles({
       ),
     },
     {
-      title: "X",
-      dataIndex: "x",
-      key: "x",
+      title: "Size",
+      dataIndex: "index",
+      key: "6mm",
       width: 80,
-      render: (x, record) =>
-        editingHole === record.id ? (
-          <InputNumber
-            value={editX}
-            onChange={(val) => setEditX(val || 0)}
-            size="small"
-            style={{ width: 70 }}
-          />
-        ) : (
-          <span>{Math.round(x)}px</span>
-        ),
+      render: () => <span>6mm</span>,
     },
-    {
-      title: "Y",
-      dataIndex: "y",
-      key: "y",
-      width: 80,
-      render: (y, record) =>
-        editingHole === record.id ? (
-          <InputNumber
-            value={editY}
-            onChange={(val) => setEditY(val || 0)}
-            size="small"
-            style={{ width: 70 }}
-          />
-        ) : (
-          <span>{Math.round(y)}px</span>
-        ),
-    },
+    // {
+    //   title: "X",
+    //   dataIndex: "x",
+    //   key: "x",
+    //   width: 80,
+    //   render: (x, record) =>
+    //     editingHole === record.id ? (
+    //       <InputNumber
+    //         value={editX}
+    //         onChange={(val) => setEditX(val || 0)}
+    //         size="small"
+    //         style={{ width: 70 }}
+    //       />
+    //     ) : (
+    //       <span>{Math.round(x)}px</span>
+    //     ),
+    // },
+    // {
+    //   title: "Y",
+    //   dataIndex: "y",
+    //   key: "y",
+    //   width: 80,
+    //   render: (y, record) =>
+    //     editingHole === record.id ? (
+    //       <InputNumber
+    //         value={editY}
+    //         onChange={(val) => setEditY(val || 0)}
+    //         size="small"
+    //         style={{ width: 70 }}
+    //       />
+    //     ) : (
+    //       <span>{Math.round(y)}px</span>
+    //     ),
+    // },
     {
       title: "Actions",
       key: "actions",
@@ -146,11 +153,11 @@ function DrillingHoles({
             </Button>
           ) : (
             <>
-              <Button
+              {/* <Button
                 size="small"
                 icon={<EditOutlined />}
                 onClick={() => startEditingHole(record)}
-              />
+              /> */}
               <Popconfirm
                 title="Delete this hole?"
                 onConfirm={() => deleteHole(record.id)}
@@ -261,29 +268,6 @@ function DrillingHoles({
             <AimOutlined style={{ fontSize: 32 }} />
             <div className="mt-2">No holes placed yet</div>
           </div>
-        )}
-
-        {/* Distance from Edges */}
-        {drillingHoles.length > 0 && (
-          <>
-            <Divider style={{ margin: "8px 0" }}>Distance from Edges</Divider>
-            <div className="space-y-2 max-h-32 overflow-y-auto">
-              {drillingHoles.map((hole, idx) => {
-                const distances = getDistanceFromEdge(hole);
-                return (
-                  <div key={hole.id} className="bg-gray-50 p-2 rounded text-xs">
-                    <div className="font-medium mb-1">Hole {idx + 1}</div>
-                    <div className="grid grid-cols-4 gap-1">
-                      <span>↑ {distances.top}px</span>
-                      <span>↓ {distances.bottom}px</span>
-                      <span>← {distances.left}px</span>
-                      <span>→ {distances.right}px</span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </>
         )}
       </Space>
     </Card>

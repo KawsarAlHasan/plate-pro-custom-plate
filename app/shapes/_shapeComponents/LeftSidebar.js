@@ -23,12 +23,14 @@ import {
 } from "@ant-design/icons";
 import StepIndicator from "./_leftSidebar/StepIndicator";
 import Settings from "./_leftSidebar/Settings";
-import ShapeProperties from "./_leftSidebar/ShapeProperties";
+// import ShapeProperties from "./_leftSidebar/ShapeProperties";
 import DrillingHoles from "./_leftSidebar/DrillingHoles";
 import MaterialSelector from "./_leftSidebar/MaterialSelector";
 import PricingPanel from "./_leftSidebar/PricingPanel";
 import DimensionInput from "./_leftSidebar/DimensionInput";
 import ValidationPanel from "./_leftSidebar/ValidationPanel";
+import { showToast } from "nextjs-toast-notify";
+import ShapeProperties from "./_leftSidebar/ShapeProperties";
 
 function LeftSidebar({
   /* Steps */
@@ -85,17 +87,37 @@ function LeftSidebar({
   setSelectedThickness,
   selectedColor,
   setSelectedColor,
-  specialColorRequest,
-  setSpecialColorRequest,
+  selectedFinish,
+  setSelectedFinish,
 
   /* Validation & pricing */
   validationErrors,
   validateOrder,
   totalArea,
   totalPerimeter,
+
+  /* Material list */
+  materialList,
+  isMaterialLoading,
 }) {
+  const toggleShapeLock = (check) => {
+    const updatedShapes = shapes.map((shape) =>
+      shape.id ? { ...shape, locked: check } : shape,
+    );
+    updateShapes(updatedShapes);
+    showToast.success(check ? "Shape locked" : "Shape unlocked", {
+      duration: 2000,
+    });
+  };
+
   // Handle next step
   const handleNextStep = () => {
+    if (currentStep === 1) {
+      toggleShapeLock(true);
+    } else if (currentStep === 2) {
+      setGridVisible(false);
+    }
+
     if (currentStep === 1 && shapes.length === 0) {
       message.warning("Please draw or upload a shape first");
       return;
@@ -121,12 +143,29 @@ function LeftSidebar({
     }
   };
 
+  // Handle previous step
+  const handlePrevStep = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+
+    // when user goes back to step 1, unlock the shape
+    if (currentStep === 2) {
+      toggleShapeLock(false);
+    } else if (currentStep === 3) {
+      setGridVisible(true);
+    }
+  };
+
   return (
     <div className="col-span-4 space-y-4 overflow-y-auto max-h-screen">
       {/* Step Indicator */}
       <StepIndicator
         currentStep={currentStep}
         setCurrentStep={setCurrentStep}
+        shapes={shapes}
+        updateShapes={updateShapes}
+        setGridVisible={setGridVisible}
       />
 
       {/* Step 1: Shape Drawing */}
@@ -382,8 +421,10 @@ function LeftSidebar({
           setSelectedThickness={setSelectedThickness}
           selectedColor={selectedColor}
           setSelectedColor={setSelectedColor}
-          specialColorRequest={specialColorRequest}
-          setSpecialColorRequest={setSpecialColorRequest}
+          selectedFinish={selectedFinish}
+          setSelectedFinish={setSelectedFinish}
+          materialList={materialList}
+          isMaterialLoading={isMaterialLoading}
         />
       )}
 
@@ -401,14 +442,15 @@ function LeftSidebar({
             selectedMaterial={selectedMaterial}
             selectedThickness={selectedThickness}
             selectedColor={selectedColor}
-            specialColorRequest={specialColorRequest}
+            selectedFinish={selectedFinish}
             shapes={shapes}
+            materialList={materialList}
           />
         </>
       )}
 
       {/* Shape Properties */}
-      {selectedShape && currentStep === 1 && (
+      {/* {selectedShape && currentStep === 1 && (
         <ShapeProperties
           shapes={shapes}
           selectedShape={selectedShape}
@@ -416,7 +458,7 @@ function LeftSidebar({
           setSelectedShape={setSelectedShape}
           setSelectedPoint={setSelectedPoint}
         />
-      )}
+      )} */}
 
       {/* Settings */}
       {currentStep === 1 && (
@@ -436,30 +478,13 @@ function LeftSidebar({
       <Card size="small" className="shadow-md">
         <div className="flex gap-2">
           {currentStep > 1 && (
-            <Button
-              onClick={() => setCurrentStep(currentStep - 1)}
-              block
-              size="large"
-            >
+            <Button onClick={handlePrevStep} block size="large">
               ← Previous
             </Button>
           )}
           <Button type="primary" onClick={handleNextStep} block size="large">
             {currentStep === 4 ? "Submit Order" : "Next →"}
           </Button>
-        </div>
-      </Card>
-
-      {/* Delivery Info */}
-      <Card size="small" className="shadow-md bg-amber-50 border-amber-200">
-        <div className="flex items-center gap-2">
-          <span className="text-2xl">🚚</span>
-          <div>
-            <div className="font-bold text-amber-800">Delivery Time</div>
-            <div className="text-sm text-amber-700">
-              3-4 weeks production time
-            </div>
-          </div>
         </div>
       </Card>
     </div>

@@ -1,9 +1,13 @@
-import React from 'react'
+"use client";
+import React from "react";
+import { useMyOrderLists } from "../api/userApi";
 
 function page() {
-  return (
-    <div>page</div>
-  )
+  const { orderList, isLoading, isError, mutate } = useMyOrderLists();
+
+  console.log(orderList, "orderList");
+
+  return <div>page</div>;
 }
 
-export default page
+export default page;

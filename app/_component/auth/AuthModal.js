@@ -1,7 +1,7 @@
 "use client";
 import { Modal } from "antd";
 import Signin from "./Signin";
-import { useAuthModal } from "../../contact/AuthModalContext";
+import { useAuthModal } from "../../contex/AuthModalContext";
 
 const AuthModal = () => {
   const { isAuthModalOpen, closeAuthModal } = useAuthModal();

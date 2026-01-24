@@ -4,17 +4,21 @@ import { Line } from "react-konva";
 import { message } from "antd";
 import { produce } from "immer";
 import ShapeTemplate from "./ShapeTemplate";
-import { useShapeList } from "../api/shapeListApi";
-import { useSearchParams } from "next/navigation";
+import { useShapeList, useMaterialList } from "../api/shapeListApi";
+import { useRouter, useSearchParams } from "next/navigation";
 import LeftSidebar from "./_shapeComponents/LeftSidebar";
 import OrderConfirmation from "./_shapeComponents/OrderConfirmation";
 import MainCanvasArea from "./_shapeComponents/_mainCanvasArea/MainCanvasArea";
+import { fetcherWithTokenPostFormData } from "../api/api";
 
 const DxfEditor = () => {
   const searchParams = useSearchParams();
   const shapeId = searchParams.get("shapeId");
 
   const { shapeList, isLoading, isError, mutate } = useShapeList();
+  const { materialList, isLoading: isMaterialLoading } = useMaterialList();
+
+  const router = useRouter();
 
   // State Management
   const [shapes, setShapes] = useState([]);
@@ -49,7 +53,7 @@ const DxfEditor = () => {
   const [selectedMaterial, setSelectedMaterial] = useState(null);
   const [selectedThickness, setSelectedThickness] = useState(null);
   const [selectedColor, setSelectedColor] = useState(null);
-  const [specialColorRequest, setSpecialColorRequest] = useState("");
+  const [selectedFinish, setSelectedFinish] = useState(null);
 
   // Round by Drag State
   const [roundByDragActive, setRoundByDragActive] = useState(false);
@@ -89,9 +93,12 @@ const DxfEditor = () => {
       visible: true,
       locked: false,
       name: selectedShape.name,
+      originalData: selectedShape, // Store original shape data
     };
 
     const shapesArray = [formattedShape];
+
+    setSelectedShape(`shape-${selectedShape.id}`);
 
     setShapes(shapesArray);
     updateHistory(shapesArray);
@@ -103,6 +110,8 @@ const DxfEditor = () => {
       initialCornerSettings[idx] = { type: "sharp", radius: 0 };
     });
     setCornerSettings(initialCornerSettings);
+
+    setSelectedPoint(null);
   }, [shapeId, shapeList]);
 
   // Handle window resize
@@ -161,7 +170,7 @@ const DxfEditor = () => {
     setHistoryIndex(newHistory.length - 1);
   };
 
-  // ============= NEW: Shape Dragging Functions =============
+  // ============= Shape Dragging Functions =============
   const handleShapeMouseDown = (e, shapeId) => {
     if (toolMode !== "select" && toolMode !== "move-shape") return;
 
@@ -325,12 +334,11 @@ const DxfEditor = () => {
         totalPerimeter += perimeter;
       }
     });
+    const areaSquareMeter = totalArea / 144;
+    const perimeterSquareMerer = totalPerimeter / 12;
 
-    const areaSqFt = totalArea / 144;
-    const perimeterFt = totalPerimeter / 12;
-
-    setTotalArea(areaSqFt);
-    setTotalPerimeter(perimeterFt);
+    setTotalArea(areaSquareMeter);
+    setTotalPerimeter(perimeterSquareMerer);
   };
 
   const getPolygonArea = (points) => {
@@ -756,7 +764,7 @@ const DxfEditor = () => {
     }
 
     // Check color
-    if (!selectedColor && !specialColorRequest) {
+    if (!selectedColor) {
       errors.push("Please select a color or request a special color.");
     }
 
@@ -786,6 +794,157 @@ const DxfEditor = () => {
 
     setValidationErrors(errors);
     return errors.length === 0;
+  };
+
+  // Submit Order Function
+  const handleSubmitOrder = async () => {
+    if (!validateOrder()) {
+      message.error("Please fix validation errors before submitting");
+      return;
+    }
+
+    // Get material and thickness details
+    const materialData = materialList?.find((m) => m.id === selectedMaterial);
+    const thicknessData = materialData?.variants?.find(
+      (v) => v.id === selectedThickness,
+    );
+
+    // Calculate total price
+    const basePrice = parseFloat(thicknessData?.price || 0);
+    const totalPrice = basePrice * totalArea;
+
+    // Prepare order data
+    const orderData = {
+      tatalArea: Math.round(totalArea),
+      totalPerimeter: Math.round(totalPerimeter),
+      material: materialData,
+      thickness: thicknessData,
+      color: selectedColor,
+      finish: selectedFinish,
+      totalDrilingHole: drillingHoles.length,
+      total_price: Math.round(totalPrice),
+      shapes: shapes.map((shape) => ({
+        ...shape.originalData,
+        points: shape.points,
+        drillingHole: drillingHoles.map((hole) => [hole.x, hole.y]),
+      })),
+    };
+
+    // Console log the order data
+    console.log("Order Data:", JSON.stringify(orderData, null, 2));
+
+    try {
+      // Step 1: Create main order
+      const orderFormData = new FormData();
+      orderFormData.append("tatalArea", orderData.tatalArea);
+      orderFormData.append("totalPerimeter", orderData.totalPerimeter);
+      orderFormData.append("material", orderData.material?.id);
+      orderFormData.append("thickness", orderData.thickness?.id);
+      orderFormData.append("color", orderData.color);
+      orderFormData.append("totalDrilingHoles", orderData.totalDrilingHole);
+      orderFormData.append("total_price", orderData.total_price);
+
+      // Optional: Add finish if exists
+      if (orderData.finish) {
+        orderFormData.append("finish", orderData.finish);
+      }
+
+      const orderResponse = await fetcherWithTokenPostFormData(
+        "/api/services/order-plates/create/",
+        orderFormData,
+      );
+
+      // Step 2: Create order items (shapes)
+      const createOrderItems = async () => {
+        if (!orderResponse?.id) {
+          throw new Error("Order ID not found in response");
+        }
+
+        const itemsPromises = shapes.map(async (shape, index) => {
+          const itemsFormData = new FormData();
+
+          // Append order ID
+          itemsFormData.append("order", orderResponse.id);
+
+          // Append shape data
+          itemsFormData.append(
+            "name",
+            shape.originalData?.name || `Shape ${index + 1}`,
+          );
+          // itemsFormData.append("icon", shape.originalData?.icon || "");
+          itemsFormData.append(
+            "description",
+            shape.originalData?.description || "",
+          );
+          itemsFormData.append("points", JSON.stringify(shape.points));
+
+          // Append drilling holes for this specific shape
+          // Note: Your API might need different structure for drilling holes
+          const shapeDrillingHoles = drillingHoles.filter(
+            (hole) =>
+              // You might need to adjust this logic based on how holes are associated with shapes
+              hole.shapeId === shape.id || true, // temporary
+          );
+          itemsFormData.append(
+            "drillingHole",
+            JSON.stringify(shapeDrillingHoles.map((h) => [h.x, h.y])),
+          );
+
+          itemsFormData.append(
+            "closed",
+            shape.originalData?.closed?.toString() || "true",
+          );
+          itemsFormData.append(
+            "is_active",
+            shape.originalData?.is_active?.toString() || "true",
+          );
+
+          // Optional: Add variants if exists
+          if (
+            shape.originalData?.variants &&
+            shape.originalData.variants.length > 0
+          ) {
+            itemsFormData.append(
+              "variants",
+              JSON.stringify(shape.originalData.variants),
+            );
+          }
+
+          try {
+            const response = await fetcherWithTokenPostFormData(
+              "/api/services/order-plates/items/",
+              itemsFormData,
+            );
+            console.log(`Shape ${index + 1} created:`, response);
+            return response;
+          } catch (error) {
+            console.error(`Error creating shape ${index + 1}:`, error);
+            throw error;
+          }
+        });
+
+        return Promise.all(itemsPromises);
+      };
+
+      // Create all order items
+      await createOrderItems();
+
+      // Show success message
+      message.success("Order submitted successfully!");
+
+      router.push("/orders");
+    } catch (error) {
+      console.error("Error submitting order:", error);
+      message.error("Failed to submit order. Please try again.");
+
+      // Optional: Show more specific error message
+      if (error.response?.data) {
+        console.error("API Error Details:", error.response.data);
+      }
+    } finally {
+      // Close modal
+      setShowValidationModal(false);
+    }
   };
 
   return (
@@ -842,12 +1001,14 @@ const DxfEditor = () => {
               setSelectedThickness={setSelectedThickness}
               selectedColor={selectedColor}
               setSelectedColor={setSelectedColor}
-              specialColorRequest={specialColorRequest}
-              setSpecialColorRequest={setSpecialColorRequest}
+              selectedFinish={selectedFinish}
+              setSelectedFinish={setSelectedFinish}
               validationErrors={validationErrors}
               validateOrder={validateOrder}
               totalArea={totalArea}
               totalPerimeter={totalPerimeter}
+              materialList={materialList}
+              isMaterialLoading={isMaterialLoading}
             />
 
             {/* Main Canvas Area */}
@@ -912,6 +1073,10 @@ const DxfEditor = () => {
             selectedMaterial={selectedMaterial}
             selectedThickness={selectedThickness}
             selectedColor={selectedColor}
+            selectedFinish={selectedFinish}
+            materialList={materialList}
+            handleSubmitOrder={handleSubmitOrder}
+            validationErrors={validationErrors}
           />
         </div>
       </div>

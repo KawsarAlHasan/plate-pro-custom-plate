@@ -1,8 +1,6 @@
 "use client";
-import { Card, Button, Space, Select, Divider, Radio } from "antd";
-import { CheckCircleOutlined } from "@ant-design/icons";
-import { useState } from "react";
-import { useMaterialList } from "../../../api/shapeListApi";
+import { Card, Button, Space, Select, Divider, Radio, Spin } from "antd";
+import { CheckCircleOutlined, LoadingOutlined } from "@ant-design/icons";
 
 const { Option } = Select;
 
@@ -36,18 +34,26 @@ function MaterialSelector({
   setSelectedThickness,
   selectedColor,
   setSelectedColor,
-  specialColorRequest,
-  setSpecialColorRequest,
+  selectedFinish,
+  setSelectedFinish,
+  materialList,
+  isMaterialLoading,
 }) {
-  const { materialList, isLoading, isError, mutate } = useMaterialList();
-
-  const [selectedFinish, setSelectedFinish] = useState(null);
-
   // Get variants for selected material
   const selectedMaterialData = materialList?.find(
     (m) => m.id === selectedMaterial,
   );
   const availableVariants = selectedMaterialData?.variants || [];
+
+  if (isMaterialLoading) {
+    return (
+      <Card title="🎨 Material & Color" size="small" className="shadow-md">
+        <div className="flex justify-center items-center py-8">
+          <Spin indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />} />
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <Card title="🎨 Material & Color" size="small" className="shadow-md">
@@ -60,7 +66,10 @@ function MaterialSelector({
               <Button
                 key={material.id}
                 type={selectedMaterial === material.id ? "primary" : "default"}
-                onClick={() => setSelectedMaterial(material.id)}
+                onClick={() => {
+                  setSelectedMaterial(material.id);
+                  setSelectedThickness(null); // Reset thickness when material changes
+                }}
                 className={`h-auto py-2 text-left ${
                   selectedMaterial === material.id
                     ? ""
@@ -115,7 +124,7 @@ function MaterialSelector({
                       <div>
                         <div className="font-medium">{variant.name}</div>
                         <div className="text-xs opacity-70">
-                          ${parseFloat(variant.price).toFixed(2)}/m²
+                          €{parseFloat(variant.price).toFixed(2)}/m²
                         </div>
                       </div>
                     </Radio.Button>
@@ -136,7 +145,6 @@ function MaterialSelector({
                 key={color.id}
                 onClick={() => {
                   setSelectedColor(color.id);
-                  setSpecialColorRequest("");
                 }}
                 className={`
                   relative cursor-pointer rounded-lg p-1 transition-all
@@ -184,10 +192,7 @@ function MaterialSelector({
         </div>
 
         {/* Selection Summary */}
-        {(selectedMaterial ||
-          selectedThickness ||
-          selectedColor ||
-          specialColorRequest) && (
+        {(selectedMaterial || selectedThickness || selectedColor) && (
           <>
             <Divider style={{ margin: "8px 0" }} />
             <div className="bg-green-50 p-3 rounded-lg">
@@ -208,7 +213,14 @@ function MaterialSelector({
                 )}
                 {selectedThickness && (
                   <div>
-                    Thickness: <strong>{selectedThickness}mm</strong>
+                    Thickness:{" "}
+                    <strong>
+                      {
+                        availableVariants.find(
+                          (v) => v.id === selectedThickness,
+                        )?.name
+                      }
+                    </strong>
                   </div>
                 )}
                 {selectedColor && (
@@ -225,12 +237,6 @@ function MaterialSelector({
                     <strong>
                       {standardColors.find((c) => c.id === selectedColor)?.name}
                     </strong>
-                  </div>
-                )}
-                {specialColorRequest && (
-                  <div>
-                    Special Color:{" "}
-                    <strong>"{specialColorRequest.substring(0, 30)}..."</strong>
                   </div>
                 )}
                 {selectedFinish && (

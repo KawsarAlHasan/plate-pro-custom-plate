@@ -6,11 +6,14 @@ import { MailOutlined, LockOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
 import { API } from "../../api/api";
 import Cookies from "js-cookie";
+import { useAuthModal } from "../../contex/AuthModalContext";
 
 function Signin() {
   const [form] = Form.useForm();
 
   const router = useRouter();
+
+  const { closeAuthModal } = useAuthModal();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -26,6 +29,7 @@ function Signin() {
       if (res.status === 200) {
         message.success("Login successful!");
         Cookies.set("token", res?.data?.access);
+        closeAuthModal();
         router.push("/");
       }
     } catch (error) {

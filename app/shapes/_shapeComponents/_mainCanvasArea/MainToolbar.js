@@ -99,15 +99,15 @@ function MainToolbar({
         <Statistic
           title="Total Area"
           value={totalArea?.toFixed(2)}
-          suffix="sq ft"
+          suffix="sq m"
           style={{ fontSize: "16px", color: "#1890ff" }}
         />
-        <Statistic
+        {/* <Statistic
           title="Perimeter"
           value={totalPerimeter?.toFixed(2)}
           suffix="ft"
           style={{ fontSize: "16px", color: "#52c41a" }}
-        />
+        /> */}
       </div>
     </div>
   );

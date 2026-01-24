@@ -10,7 +10,7 @@ import { useShapeList } from "../../api/shapeListApi";
 import { Button, Image } from "antd";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
-import { useAuthModal } from "../../contact/AuthModalContext";
+import { useAuthModal } from "../../contex/AuthModalContext";
 
 export default function FeaturedShapeAndSize() {
   const { shapeList, isLoading, isError, mutate } = useShapeList();

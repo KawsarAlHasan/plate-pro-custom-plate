@@ -2,7 +2,7 @@
 import { Button } from "antd";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
-import { useAuthModal } from "../../contact/AuthModalContext";
+import { useAuthModal } from "../../contex/AuthModalContext";
 
 export default function Banner() {
   const router = useRouter();

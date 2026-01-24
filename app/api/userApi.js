@@ -14,3 +14,16 @@ export const useMyProfile = (token) => {
     mutate,
   };
 };
+
+export const useMyOrderLists = () => {
+  const { data, error, mutate } = useSWR(
+    "/api/services/order-plates/",
+    fetcherWithToken,
+  );
+  return {
+    orderList: data,
+    isLoading: !data && !error,
+    isError: error,
+    mutate,
+  };
+};

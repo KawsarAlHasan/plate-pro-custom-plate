@@ -5,38 +5,22 @@ import { useMemo } from "react";
 
 // Pricing Configuration
 const PRICING_CONFIG = {
-  basePrices: {
-    granite: 50,
-    quartz: 60,
-    marble: 80,
-    "solid-surface": 40,
-    laminate: 25,
-    "stainless-steel": 70,
-  },
-  thicknessMultipliers: {
-    12: 0.8,
-    20: 1.0,
-    30: 1.3,
-    40: 1.6,
-    50: 2.0,
-  },
   colorMultipliers: {
     white: 1.0,
     cream: 1.0,
     gray: 1.0,
-    charcoal: 1.05,
-    black: 1.1,
+    charcoal: 1.0,
+    black: 1.0,
     brown: 1.0,
-    navy: 1.15,
-    green: 1.15,
-    terracotta: 1.1,
+    navy: 1.0,
+    green: 1.0,
+    terracotta: 1.0,
     sand: 1.0,
   },
-  specialColorSurcharge: 50, // Fixed surcharge for special colors
   complexShapeMultiplier: 1.2, // For shapes with more than 6 points
   radiusCornerCost: 5, // Per rounded corner
   drillingHoleCost: 3, // Per hole
-  minimumOrderPrice: 100,
+  minimumOrderPrice: 10,
 };
 
 function PricingPanel({
@@ -46,37 +30,41 @@ function PricingPanel({
   selectedMaterial,
   selectedThickness,
   selectedColor,
+  selectedFinish,
   shapes,
+  materialList,
 }) {
   // Calculate pricing
   const pricing = useMemo(() => {
     let breakdown = [];
     let subtotal = 0;
 
-    // Base price per sq ft
-    const basePrice = PRICING_CONFIG.basePrices[selectedMaterial] || 0;
+    // Get material and thickness data
+    const materialData = materialList?.find((m) => m.id === selectedMaterial);
+    const thicknessData = materialData?.variants?.find(
+      (v) => v.id === selectedThickness,
+    );
+
+    // Base price per sq m from thickness/variant
+    const basePrice = parseFloat(thicknessData?.price || 0);
     const areaPrice = basePrice * totalArea;
 
     if (areaPrice > 0) {
       breakdown.push({
-        item: `Base Material (${selectedMaterial || "Not selected"})`,
-        calculation: `${totalArea.toFixed(2)} sq ft × €${basePrice}/sq ft`,
+        item: `Base Material (${materialData?.name || "Not selected"})`,
+        calculation: `${totalArea.toFixed(2)} sq m × €${basePrice}/sq m`,
         amount: areaPrice,
       });
       subtotal += areaPrice;
     }
 
-    // Thickness multiplier
-    const thicknessMultiplier =
-      PRICING_CONFIG.thicknessMultipliers[selectedThickness] || 1;
-    if (selectedThickness && thicknessMultiplier !== 1) {
-      const thicknessAdjustment = subtotal * (thicknessMultiplier - 1);
+    // Thickness info (already included in base price)
+    if (selectedThickness && thicknessData) {
       breakdown.push({
-        item: `Thickness Adjustment (${selectedThickness}mm)`,
-        calculation: `${((thicknessMultiplier - 1) * 100).toFixed(0)}% adjustment`,
-        amount: thicknessAdjustment,
+        item: `Thickness (${thicknessData.name})`,
+        calculation: `Included in base price`,
+        amount: 0,
       });
-      subtotal += thicknessAdjustment;
     }
 
     // Color multiplier
@@ -105,15 +93,25 @@ function PricingPanel({
     }
 
     // Drilling holes
-    // Note: We'd need to pass drillingHoles count here
-    // For now, assuming 2 holes minimum
-    const drillingCost = 2 * PRICING_CONFIG.drillingHoleCost;
-    breakdown.push({
-      item: "Drilling Holes",
-      calculation: `2 holes × €${PRICING_CONFIG.drillingHoleCost}`,
-      amount: drillingCost,
-    });
-    subtotal += drillingCost;
+    const drillingCost = drillingHoles.length * PRICING_CONFIG.drillingHoleCost;
+    if (drillingHoles.length > 0) {
+      breakdown.push({
+        item: "Drilling Holes",
+        calculation: `${drillingHoles.length} holes × €${PRICING_CONFIG.drillingHoleCost}`,
+        amount: drillingCost,
+      });
+      subtotal += drillingCost;
+    }
+
+    // Finish premium (optional - you can add pricing for finishes)
+    if (selectedFinish) {
+      // For now, finishes are free, but you can add pricing logic here
+      breakdown.push({
+        item: `Finish (${selectedFinish})`,
+        calculation: `Included`,
+        amount: 0,
+      });
+    }
 
     // Apply minimum order price
     const finalTotal = Math.max(subtotal, PRICING_CONFIG.minimumOrderPrice);
@@ -125,18 +123,21 @@ function PricingPanel({
       finalTotal,
       minimumApplied,
     };
-  }, [totalArea, selectedMaterial, selectedThickness, selectedColor, shapes]);
-
-  console.log(
+  }, [
     totalArea,
-    totalPerimeter,
     selectedMaterial,
-    "selectedMaterial",
     selectedThickness,
-    "selectedThickness",
     selectedColor,
+    selectedFinish,
     shapes,
-    "pricing panel",
+    drillingHoles,
+    materialList,
+  ]);
+
+  // Get display names
+  const materialData = materialList?.find((m) => m.id === selectedMaterial);
+  const thicknessData = materialData?.variants?.find(
+    (v) => v.id === selectedThickness,
   );
 
   return (
@@ -158,15 +159,15 @@ function PricingPanel({
             <div className="text-xl font-bold text-blue-700">
               {totalArea.toFixed(2)}
             </div>
-            <div className="text-xs text-blue-500">sq ft</div>
+            <div className="text-xs text-blue-500">sq m</div>
           </div>
-          <div className="bg-green-50 p-3 rounded-lg text-center">
+          {/* <div className="bg-green-50 p-3 rounded-lg text-center">
             <div className="text-xs text-green-600">Perimeter</div>
             <div className="text-xl font-bold text-green-700">
               {totalPerimeter.toFixed(2)}
             </div>
             <div className="text-xs text-green-500">ft</div>
-          </div>
+          </div> */}
         </div>
 
         <Divider style={{ margin: "12px 0" }}>Price Breakdown</Divider>
@@ -182,7 +183,9 @@ function PricingPanel({
                 <div className="text-sm">{item.item}</div>
                 <div className="text-xs text-gray-500">{item.calculation}</div>
               </div>
-              <div className="font-medium">€{item.amount.toFixed(2)}</div>
+              <div className="font-medium">
+                {item.amount > 0 ? `€${item.amount.toFixed(2)}` : "-"}
+              </div>
             </div>
           ))}
         </div>
@@ -244,9 +247,10 @@ function PricingPanel({
 
         {/* Tags */}
         <div className="flex flex-wrap gap-1">
-          {selectedMaterial && <Tag color="blue">{selectedMaterial}</Tag>}
-          {selectedThickness && <Tag color="green">{selectedThickness}mm</Tag>}
+          {materialData && <Tag color="blue">{materialData.name}</Tag>}
+          {thicknessData && <Tag color="green">{thicknessData.name}</Tag>}
           {selectedColor && <Tag color="purple">{selectedColor}</Tag>}
+          {selectedFinish && <Tag color="orange">{selectedFinish}</Tag>}
         </div>
       </Space>
     </Card>

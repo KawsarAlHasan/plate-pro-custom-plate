@@ -101,7 +101,7 @@ function MyProfile({ profileData, mutate, isMobile }) {
 
       <Modal
         title={
-          <div className="text-xl font-semibold text-gray-800 pb-2 border-b">
+          <div className="text-xl font-semibold text-gray-800 pb-2">
             My Profile
           </div>
         }
@@ -187,7 +187,7 @@ function MyProfile({ profileData, mutate, isMobile }) {
           </Form.Item>
 
           {/* Action Buttons */}
-          <div className="flex gap-3 justify-end pt-4 border-t">
+          <div className="flex gap-3 justify-end">
             <button
               type="button"
               onClick={handleCancel}

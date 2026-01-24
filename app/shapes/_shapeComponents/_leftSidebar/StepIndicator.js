@@ -1,7 +1,37 @@
+"use client";
 import { CheckCircleOutlined } from "@ant-design/icons";
 import { Card } from "antd";
 
-function StepIndicator({ currentStep, setCurrentStep }) {
+function StepIndicator({
+  currentStep,
+  setCurrentStep,
+  shapes,
+  updateShapes,
+  setGridVisible,
+}) {
+  const toggleShapeLock = (check) => {
+    const updatedShapes = shapes.map((shape) =>
+      shape.id ? { ...shape, locked: check } : shape,
+    );
+    updateShapes(updatedShapes);
+  };
+
+  const handleStepClick = (step) => {
+    if (step === 1) {
+      toggleShapeLock(false);
+    } else {
+      toggleShapeLock(true);
+    }
+
+    if (step === 2 || step === 1) {
+      setGridVisible(true);
+    } else {
+      setGridVisible(false);
+    }
+
+    setCurrentStep(step);
+  };
+
   return (
     <div>
       <Card size="small" className="shadow-lg bg-white">
@@ -10,17 +40,19 @@ function StepIndicator({ currentStep, setCurrentStep }) {
             <div
               key={step}
               className={`flex flex-col items-center cursor-pointer transition-all duration-300 ${
-                currentStep === step ? "scale-110" : "opacity-80 hover:opacity-100"
+                currentStep === step
+                  ? "scale-110"
+                  : "opacity-80 hover:opacity-100"
               }`}
-              onClick={() => setCurrentStep(step)}
+              onClick={() => handleStepClick(step)}
             >
               <div
                 className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shadow-md transition-all duration-300 ${
                   currentStep === step
                     ? "bg-blue-600 text-white ring-4 ring-blue-200"
                     : currentStep > step
-                    ? "bg-green-500 text-white"
-                    : "bg-gray-100 text-gray-700 border-2 border-gray-300"
+                      ? "bg-green-500 text-white"
+                      : "bg-gray-100 text-gray-700 border-2 border-gray-300"
                 }`}
               >
                 {currentStep > step ? <CheckCircleOutlined /> : step}
