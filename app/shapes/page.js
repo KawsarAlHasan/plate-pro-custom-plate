@@ -10,6 +10,7 @@ import LeftSidebar from "./_shapeComponents/LeftSidebar";
 import OrderConfirmation from "./_shapeComponents/OrderConfirmation";
 import MainCanvasArea from "./_shapeComponents/_mainCanvasArea/MainCanvasArea";
 import { fetcherWithTokenPostFormData } from "../api/api";
+import { showToast } from "nextjs-toast-notify";
 
 const DxfEditor = () => {
   const searchParams = useSearchParams();
@@ -796,7 +797,38 @@ const DxfEditor = () => {
     return errors.length === 0;
   };
 
-  // Submit Order Function
+  // Export canvas image
+  const exportCanvasImage = () => {
+    if (!stageRef.current) return null;
+
+    const stage = stageRef.current.getStage();
+
+    // Convert the stage to a data URL
+    const pixelRatio = 2;
+    const dataURL = stage.toDataURL({
+      pixelRatio,
+      mimeType: "image/png",
+      quality: 0.95,
+    });
+
+    return dataURL;
+  };
+
+  // Helper function to convert dataURL to File
+  const dataURLToFile = (dataURL, filename) => {
+    const arr = dataURL.split(",");
+    const mime = arr[0].match(/:(.*?);/)[1];
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+
+    return new File([u8arr], filename, { type: mime });
+  };
+
   const handleSubmitOrder = async () => {
     if (!validateOrder()) {
       message.error("Please fix validation errors before submitting");
@@ -813,40 +845,33 @@ const DxfEditor = () => {
     const basePrice = parseFloat(thicknessData?.price || 0);
     const totalPrice = basePrice * totalArea;
 
-    // Prepare order data
-    const orderData = {
-      tatalArea: Math.round(totalArea),
-      totalPerimeter: Math.round(totalPerimeter),
-      material: materialData,
-      thickness: thicknessData,
-      color: selectedColor,
-      finish: selectedFinish,
-      totalDrilingHole: drillingHoles.length,
-      total_price: Math.round(totalPrice),
-      shapes: shapes.map((shape) => ({
-        ...shape.originalData,
-        points: shape.points,
-        drillingHole: drillingHoles.map((hole) => [hole.x, hole.y]),
-      })),
-    };
-
-    // Console log the order data
-    console.log("Order Data:", JSON.stringify(orderData, null, 2));
-
     try {
-      // Step 1: Create main order
+      // Step 1: Export canvas as image
+      const canvasImage = exportCanvasImage();
+      let imageFile = null;
+
+      if (canvasImage) {
+        imageFile = dataURLToFile(canvasImage, `design-${Date.now()}.png`);
+      }
+
+      // Step 2: Create main order
       const orderFormData = new FormData();
-      orderFormData.append("tatalArea", orderData.tatalArea);
-      orderFormData.append("totalPerimeter", orderData.totalPerimeter);
-      orderFormData.append("material", orderData.material?.id);
-      orderFormData.append("thickness", orderData.thickness?.id);
-      orderFormData.append("color", orderData.color);
-      orderFormData.append("totalDrilingHoles", orderData.totalDrilingHole);
-      orderFormData.append("total_price", orderData.total_price);
+      orderFormData.append("tatalArea", Math.round(totalArea));
+      orderFormData.append("totalPerimeter", Math.round(totalPerimeter));
+      orderFormData.append("material", materialData?.id || "");
+      orderFormData.append("thickness", thicknessData?.id || "");
+      orderFormData.append("color", selectedColor || "");
+      orderFormData.append("totalDrilingHoles", drillingHoles.length);
+      orderFormData.append("total_price", Math.round(totalPrice));
 
       // Optional: Add finish if exists
-      if (orderData.finish) {
-        orderFormData.append("finish", orderData.finish);
+      if (selectedFinish) {
+        orderFormData.append("finish", selectedFinish);
+      }
+
+      // Add the canvas image to main order if needed
+      if (imageFile) {
+        orderFormData.append("design_preview", imageFile);
       }
 
       const orderResponse = await fetcherWithTokenPostFormData(
@@ -854,93 +879,94 @@ const DxfEditor = () => {
         orderFormData,
       );
 
-      // Step 2: Create order items (shapes)
-      const createOrderItems = async () => {
-        if (!orderResponse?.id) {
-          throw new Error("Order ID not found in response");
+      // Step 3: Create order items (shapes)
+      if (!orderResponse?.id) {
+        throw new Error("Order ID not found in response");
+      }
+
+      const itemsPromises = shapes.map(async (shape, index) => {
+        const itemsFormData = new FormData();
+
+        // Append order ID
+        itemsFormData.append("order", orderResponse.id);
+
+        // Append shape data
+        itemsFormData.append(
+          "name",
+          shape.originalData?.name || `Shape ${index + 1}`,
+        );
+
+        // Append the same image for all shapes (or create individual images if needed)
+        if (imageFile) {
+          // Create a new File with shape-specific name
+          const shapeImageFile = new File(
+            [imageFile],
+            `shape_${index + 1}_${Date.now()}.png`,
+            { type: "image/png" },
+          );
+          itemsFormData.append("icon", shapeImageFile);
         }
 
-        const itemsPromises = shapes.map(async (shape, index) => {
-          const itemsFormData = new FormData();
+        itemsFormData.append(
+          "description",
+          shape.originalData?.description || "",
+        );
+        itemsFormData.append("points", JSON.stringify(shape.points));
 
-          // Append order ID
-          itemsFormData.append("order", orderResponse.id);
+        // Append drilling holes
+        itemsFormData.append(
+          "drillingHole",
+          JSON.stringify(drillingHoles.map((h) => [h.x, h.y])),
+        );
 
-          // Append shape data
+        itemsFormData.append(
+          "closed",
+          shape.originalData?.closed?.toString() || "true",
+        );
+        itemsFormData.append(
+          "is_active",
+          shape.originalData?.is_active?.toString() || "true",
+        );
+
+        // Optional: Add variants if exists
+        if (shape.originalData?.variants) {
           itemsFormData.append(
-            "name",
-            shape.originalData?.name || `Shape ${index + 1}`,
+            "variants",
+            JSON.stringify(shape.originalData.variants),
           );
-          // itemsFormData.append("icon", shape.originalData?.icon || "");
-          itemsFormData.append(
-            "description",
-            shape.originalData?.description || "",
-          );
-          itemsFormData.append("points", JSON.stringify(shape.points));
+        }
 
-          // Append drilling holes for this specific shape
-          // Note: Your API might need different structure for drilling holes
-          const shapeDrillingHoles = drillingHoles.filter(
-            (hole) =>
-              // You might need to adjust this logic based on how holes are associated with shapes
-              hole.shapeId === shape.id || true, // temporary
-          );
-          itemsFormData.append(
-            "drillingHole",
-            JSON.stringify(shapeDrillingHoles.map((h) => [h.x, h.y])),
-          );
-
-          itemsFormData.append(
-            "closed",
-            shape.originalData?.closed?.toString() || "true",
-          );
-          itemsFormData.append(
-            "is_active",
-            shape.originalData?.is_active?.toString() || "true",
-          );
-
-          // Optional: Add variants if exists
-          if (
-            shape.originalData?.variants &&
-            shape.originalData.variants.length > 0
-          ) {
-            itemsFormData.append(
-              "variants",
-              JSON.stringify(shape.originalData.variants),
-            );
-          }
-
-          try {
-            const response = await fetcherWithTokenPostFormData(
-              "/api/services/order-plates/items/",
-              itemsFormData,
-            );
-            console.log(`Shape ${index + 1} created:`, response);
-            return response;
-          } catch (error) {
-            console.error(`Error creating shape ${index + 1}:`, error);
-            throw error;
-          }
-        });
-
-        return Promise.all(itemsPromises);
-      };
+        return fetcherWithTokenPostFormData(
+          "/api/services/order-plates/items/",
+          itemsFormData,
+        );
+      });
 
       // Create all order items
-      await createOrderItems();
+      await Promise.all(itemsPromises);
 
       // Show success message
-      message.success("Order submitted successfully!");
+      showToast.success("Order submitted successfully!");
 
-      router.push("/orders");
+      // Redirect to orders page
+      setTimeout(() => {
+        router.push("/orders");
+      }, 1500);
     } catch (error) {
       console.error("Error submitting order:", error);
-      message.error("Failed to submit order. Please try again.");
 
-      // Optional: Show more specific error message
+      // User-friendly error message
+      let errorMessage = "Failed to submit order. Please try again.";
       if (error.response?.data) {
-        console.error("API Error Details:", error.response.data);
+        const apiError = error.response.data;
+        if (typeof apiError === "object") {
+          errorMessage = Object.values(apiError).flat().join(", ");
+        } else {
+          errorMessage = apiError.toString();
+        }
       }
+
+      message.error(errorMessage);
     } finally {
       // Close modal
       setShowValidationModal(false);
@@ -962,6 +988,7 @@ const DxfEditor = () => {
           <div className="grid grid-cols-12 gap-6">
             {/* Left Sidebar */}
             <LeftSidebar
+              stageRef={stageRef}
               currentStep={currentStep}
               setCurrentStep={setCurrentStep}
               setShowValidationModal={setShowValidationModal}

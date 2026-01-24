@@ -27,3 +27,16 @@ export const useMyOrderLists = () => {
     mutate,
   };
 };
+
+// export const useCheck = () => {
+//   const { data, error, mutate } = useSWR(
+//     "/api/v1/service/recent-activities/",
+//     fetcherWithToken,
+//   );
+//   return {
+//     check: data,
+//     isLoading: !data && !error,
+//     isError: error,
+//     mutate,
+//   };
+// };

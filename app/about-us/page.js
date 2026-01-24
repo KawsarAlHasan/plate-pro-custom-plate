@@ -1,6 +1,13 @@
+"use client";
 import React from 'react'
+// import { useCheck } from '../api/userApi';
 
 export default function page() {
+
+  // const {check} = useCheck();
+
+  // console.log("check", check);
+
   return (
     <>
     {/* ====about page==== */}

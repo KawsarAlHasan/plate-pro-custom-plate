@@ -33,6 +33,7 @@ import { showToast } from "nextjs-toast-notify";
 import ShapeProperties from "./_leftSidebar/ShapeProperties";
 
 function LeftSidebar({
+  stageRef,
   /* Steps */
   currentStep,
   setCurrentStep,
