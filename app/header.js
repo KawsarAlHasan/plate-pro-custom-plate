@@ -9,7 +9,6 @@ import {
   UserOutlined,
   MenuOutlined,
   LogoutOutlined,
-  SettingOutlined,
   DownOutlined,
   ShoppingCartOutlined,
 } from "@ant-design/icons";
@@ -91,7 +90,8 @@ export default function Header() {
   ];
 
   return (
-    <header className="bg-white border-b border-gray-100 sticky top-0 z-50">
+    <header className="bg-white border-b border-gray-100">
+      {/* sticky top-0 z-50 */}
       <div className="px-4 sm:px-6 lg:px-20">
         <div className="flex items-center justify-between h-16 lg:h-[72px]">
           {/* Logo */}
@@ -147,22 +147,6 @@ export default function Header() {
                     </div>
                   </Dropdown>
                 </div>
-
-                {/* Logged In State - Mobile */}
-                <div className="lg:hidden flex items-center gap-4">
-                  {/* <Dropdown
-                    menu={{ items: userMenuItems }}
-                    trigger={["click"]}
-                    placement="bottomRight"
-                  >
-                    <Avatar
-                      size={36}
-                      src={userData.avatar}
-                      icon={<UserOutlined />}
-                      className="border border-gray-200 cursor-pointer"
-                    />
-                  </Dropdown> */}
-                </div>
               </>
             ) : (
               <>
@@ -203,7 +187,6 @@ export default function Header() {
           </div>
         </div>
       </div>
-
       {/* Mobile Menu Drawer */}
       <Drawer
         title={
@@ -250,13 +233,6 @@ export default function Header() {
                 <ShoppingCartOutlined /> My Orders
               </Link>
 
-              {/* <Link
-                href="/settings"
-                className="text-gray-700 hover:text-gray-900 hover:bg-gray-50 font-medium px-4 py-3 rounded-lg transition-colors duration-200 flex items-center gap-2"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                <SettingOutlined /> Settings
-              </Link> */}
               <div className="border-t border-gray-200 my-4"></div>
               <button
                 onClick={() => {

@@ -21,12 +21,14 @@ export default function LoginPage() {
         email: values.email,
         password: values.password,
       };
-      const res = await API.post("/api/auth/login/", payload);
+      const res = await API.post("/api/v1/auth/login/", payload);
+
+      console.log("Login Response:", res);
 
       if (res.status === 200) {
         message.success("Login successful!");
         Cookies.set("token", res?.data?.access);
-        router.push("/");
+        // router.push("/");
       }
     } catch (error) {
       console.log("Login Error:", error);

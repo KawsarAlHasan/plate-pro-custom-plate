@@ -20,6 +20,8 @@ import {
   AimOutlined,
   RadiusSettingOutlined,
   BorderOutlined,
+  CloseOutlined,
+  AppstoreOutlined,
 } from "@ant-design/icons";
 import StepIndicator from "./_leftSidebar/StepIndicator";
 import Settings from "./_leftSidebar/Settings";
@@ -33,7 +35,8 @@ import { showToast } from "nextjs-toast-notify";
 import ShapeProperties from "./_leftSidebar/ShapeProperties";
 
 function LeftSidebar({
-  stageRef,
+  showShapeTemplate,
+  setShowShapeTemplate,
   /* Steps */
   currentStep,
   setCurrentStep,
@@ -159,7 +162,25 @@ function LeftSidebar({
   };
 
   return (
-    <div className="col-span-4 space-y-4 overflow-y-auto max-h-screen">
+    <div
+      className={
+        showShapeTemplate
+          ? "col-span-4 space-y-4 overflow-y-auto"
+          : "col-span-3 space-y-4 overflow-y-auto"
+      }
+    >
+      {/* Toggle Button */}
+      <div className="mb-1">
+        <Button
+          type={showShapeTemplate ? "primary" : "default"}
+          icon={showShapeTemplate ? <CloseOutlined /> : <AppstoreOutlined />}
+          onClick={() => setShowShapeTemplate(!showShapeTemplate)}
+          className="shadow-sm"
+        >
+          {showShapeTemplate ? "Hide Template" : "Show Shape Template"}
+        </Button>
+      </div>
+
       {/* Step Indicator */}
       <StepIndicator
         currentStep={currentStep}
@@ -169,289 +190,290 @@ function LeftSidebar({
         setGridVisible={setGridVisible}
       />
 
-      {/* Step 1: Shape Drawing */}
-      {currentStep === 1 && (
-        <>
-          {/* Editing Tools */}
-          <Card title="🛠️ Drawing Tools" size="small" className="shadow-md">
-            <Space orientation="vertical" className="w-full" size="small">
-              <div className="grid grid-cols-4 gap-2">
-                <Tooltip title="Move Shape (Drag entire shape)">
-                  <Button
-                    type={toolMode === "select" ? "primary" : "default"}
-                    icon={<DragOutlined />}
-                    onClick={() => setToolMode("select")}
-                    style={{ height: 40 }}
-                  >
-                    Move
-                  </Button>
-                </Tooltip>
-                <Tooltip title="Select Point">
-                  <Button
-                    type={toolMode === "select-point" ? "primary" : "default"}
-                    icon={<AimOutlined />}
-                    onClick={() => setToolMode("select-point")}
-                    style={{ height: 40 }}
-                  >
-                    Point
-                  </Button>
-                </Tooltip>
-                <Tooltip title="Add Point">
-                  <Button
-                    type={toolMode === "add-point" ? "primary" : "default"}
-                    icon={<PlusOutlined />}
-                    onClick={() => setToolMode("add-point")}
-                    style={{ height: 40 }}
-                  >
-                    Add
-                  </Button>
-                </Tooltip>
-                <Tooltip title="Delete Point">
-                  <Button
-                    type={toolMode === "delete-point" ? "primary" : "default"}
-                    icon={<DeleteOutlined />}
-                    onClick={() => setToolMode("delete-point")}
-                    style={{ height: 40 }}
-                  >
-                    Delete
-                  </Button>
-                </Tooltip>
-              </div>
+      <div className="max-h-screen">
+        {/* Step 1: Shape Drawing */}
+        {currentStep === 1 && (
+          <>
+            {/* Editing Tools */}
+            <Card title="🛠️ Drawing Tools" size="small" className="shadow-md">
+              <Space orientation="vertical" className="w-full" size="small">
+                <div className="grid grid-cols-4 gap-2">
+                  <Tooltip title="Move Shape (Drag entire shape)">
+                    <Button
+                      type={toolMode === "select" ? "primary" : "default"}
+                      icon={<DragOutlined />}
+                      onClick={() => setToolMode("select")}
+                      style={{ height: 40 }}
+                    >
+                      Move
+                    </Button>
+                  </Tooltip>
+                  <Tooltip title="Select Point">
+                    <Button
+                      type={toolMode === "select-point" ? "primary" : "default"}
+                      icon={<AimOutlined />}
+                      onClick={() => setToolMode("select-point")}
+                      style={{ height: 40 }}
+                    >
+                      Point
+                    </Button>
+                  </Tooltip>
+                  <Tooltip title="Add Point">
+                    <Button
+                      type={toolMode === "add-point" ? "primary" : "default"}
+                      icon={<PlusOutlined />}
+                      onClick={() => setToolMode("add-point")}
+                      style={{ height: 40 }}
+                    >
+                      Add
+                    </Button>
+                  </Tooltip>
+                  <Tooltip title="Delete Point">
+                    <Button
+                      type={toolMode === "delete-point" ? "primary" : "default"}
+                      icon={<DeleteOutlined />}
+                      onClick={() => setToolMode("delete-point")}
+                      style={{ height: 40 }}
+                    >
+                      Delete
+                    </Button>
+                  </Tooltip>
+                </div>
 
-              {toolMode === "select" && (
-                <Alert
-                  type="info"
-                  title="🖐️ Click and drag the shape to move it"
-                  showIcon
-                />
-              )}
+                {toolMode === "select" && (
+                  <Alert
+                    type="info"
+                    title="🖐️ Click and drag the shape to move it"
+                    showIcon
+                  />
+                )}
 
-              <Divider style={{ margin: "8px 0" }}>Rounding</Divider>
-              <Tooltip title="Round by Drag">
+                <Divider style={{ margin: "8px 0" }}>Rounding</Divider>
+                <Tooltip title="Round by Drag">
+                  <Button
+                    type={roundByDragActive ? "primary" : "default"}
+                    icon={<RadiusSettingOutlined />}
+                    onClick={toggleRoundByDrag}
+                    block
+                    style={{ height: 40 }}
+                  >
+                    🔵 Round by Drag
+                  </Button>
+                </Tooltip>
+
                 <Button
-                  type={roundByDragActive ? "primary" : "default"}
-                  icon={<RadiusSettingOutlined />}
-                  onClick={toggleRoundByDrag}
+                  icon={<BorderOutlined />}
+                  onClick={autoSquare}
                   block
                   style={{ height: 40 }}
                 >
-                  🔵 Round by Drag
+                  📐 Auto-Square (90°)
                 </Button>
-              </Tooltip>
 
-              <Button
-                icon={<BorderOutlined />}
-                onClick={autoSquare}
-                block
-                style={{ height: 40 }}
-              >
-                📐 Auto-Square (90°)
-              </Button>
-
-              {roundByDragActive && (
-                <Alert
-                  type={roundingPoints.length === 2 ? "success" : "info"}
-                  title={
-                    roundingPoints.length === 0
-                      ? "Step 1: Click first point"
-                      : roundingPoints.length === 1
-                        ? "Step 2: Click second adjacent point"
-                        : "Step 3: Drag the green midpoint"
-                  }
-                  showIcon
-                />
-              )}
-            </Space>
-          </Card>
-
-          {/* Precision Movement */}
-          {selectedPoint && toolMode === "select-point" && (
-            <Card
-              title="🎯 Precision Movement"
-              size="small"
-              className="shadow-md border-2 border-purple-400"
-            >
-              <Space orientation="vertical" className="w-full" size="small">
-                <Alert
-                  title={`Point ${selectedPoint.pointIndex + 1}`}
-                  description={`Position: (${Math.round(
-                    shapes[selectedPoint.shapeIndex]?.points[
-                      selectedPoint.pointIndex
-                    ][0],
-                  )}, ${Math.round(
-                    shapes[selectedPoint.shapeIndex]?.points[
-                      selectedPoint.pointIndex
-                    ][1],
-                  )})`}
-                  type="info"
-                  showIcon
-                />
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Move Increment: {moveIncrement}"
-                  </label>
-                  <InputNumber
-                    value={moveIncrement}
-                    onChange={(value) => setMoveIncrement(value || 0.5)}
-                    min={0.1}
-                    max={12}
-                    step={0.1}
-                    style={{ width: "100%" }}
-                  />
-                </div>
-
-                <div className="grid grid-cols-3 gap-2">
-                  <div></div>
-                  <Button
-                    type="primary"
-                    icon={<ArrowUpOutlined />}
-                    onClick={() =>
-                      movePoint(
-                        selectedPoint.shapeIndex,
-                        selectedPoint.pointIndex,
-                        "up",
-                      )
+                {roundByDragActive && (
+                  <Alert
+                    type={roundingPoints.length === 2 ? "success" : "info"}
+                    title={
+                      roundingPoints.length === 0
+                        ? "Step 1: Click first point"
+                        : roundingPoints.length === 1
+                          ? "Step 2: Click second adjacent point"
+                          : "Step 3: Drag the green midpoint"
                     }
-                    block
-                    size="small"
+                    showIcon
                   />
-                  <div></div>
-
-                  <Button
-                    type="primary"
-                    icon={<ArrowLeftOutlined />}
-                    onClick={() =>
-                      movePoint(
-                        selectedPoint.shapeIndex,
-                        selectedPoint.pointIndex,
-                        "left",
-                      )
-                    }
-                    block
-                    size="small"
-                  />
-                  <div className="flex items-center justify-center text-xs font-medium bg-gray-100 rounded">
-                    {moveIncrement}"
-                  </div>
-                  <Button
-                    type="primary"
-                    icon={<ArrowRightOutlined />}
-                    onClick={() =>
-                      movePoint(
-                        selectedPoint.shapeIndex,
-                        selectedPoint.pointIndex,
-                        "right",
-                      )
-                    }
-                    block
-                    size="small"
-                  />
-
-                  <div></div>
-                  <Button
-                    type="primary"
-                    icon={<ArrowDownOutlined />}
-                    onClick={() =>
-                      movePoint(
-                        selectedPoint.shapeIndex,
-                        selectedPoint.pointIndex,
-                        "down",
-                      )
-                    }
-                    block
-                    size="small"
-                  />
-                  <div></div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2 mt-2">
-                  <Button
-                    onClick={() => setSelectedPoint(null)}
-                    block
-                    size="small"
-                  >
-                    Deselect
-                  </Button>
-                  <Button
-                    danger
-                    onClick={() => {
-                      deletePoint(
-                        selectedPoint.shapeIndex,
-                        selectedPoint.pointIndex,
-                      );
-                      setSelectedPoint(null);
-                    }}
-                    block
-                    size="small"
-                  >
-                    Delete
-                  </Button>
-                </div>
+                )}
               </Space>
             </Card>
-          )}
 
-          <DimensionInput
-            shapes={shapes}
-            updateShapes={updateShapes}
-            unit={unit}
-            setUnit={setUnit}
-          />
-        </>
-      )}
+            {/* Precision Movement */}
+            {selectedPoint && toolMode === "select-point" && (
+              <Card
+                title="🎯 Precision Movement"
+                size="small"
+                className="shadow-md border-2 border-purple-400"
+              >
+                <Space orientation="vertical" className="w-full" size="small">
+                  <Alert
+                    title={`Point ${selectedPoint.pointIndex + 1}`}
+                    description={`Position: (${Math.round(
+                      shapes[selectedPoint.shapeIndex]?.points[
+                        selectedPoint.pointIndex
+                      ][0],
+                    )}, ${Math.round(
+                      shapes[selectedPoint.shapeIndex]?.points[
+                        selectedPoint.pointIndex
+                      ][1],
+                    )})`}
+                    type="info"
+                    showIcon
+                  />
 
-      {/* Step 2: Drilling Holes */}
-      {currentStep === 2 && (
-        <DrillingHoles
-          drillingHoles={drillingHoles}
-          setDrillingHoles={setDrillingHoles}
-          isPlacingHole={isPlacingHole}
-          setIsPlacingHole={setIsPlacingHole}
-          setToolMode={setToolMode}
-          shapes={shapes}
-        />
-      )}
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      Move Increment: {moveIncrement}"
+                    </label>
+                    <InputNumber
+                      value={moveIncrement}
+                      onChange={(value) => setMoveIncrement(value || 0.5)}
+                      min={0.1}
+                      max={12}
+                      step={0.1}
+                      style={{ width: "100%" }}
+                    />
+                  </div>
 
-      {/* Step 3: Material Selection */}
-      {currentStep === 3 && (
-        <MaterialSelector
-          selectedMaterial={selectedMaterial}
-          setSelectedMaterial={setSelectedMaterial}
-          selectedThickness={selectedThickness}
-          setSelectedThickness={setSelectedThickness}
-          selectedColor={selectedColor}
-          setSelectedColor={setSelectedColor}
-          selectedFinish={selectedFinish}
-          setSelectedFinish={setSelectedFinish}
-          materialList={materialList}
-          isMaterialLoading={isMaterialLoading}
-        />
-      )}
+                  <div className="grid grid-cols-3 gap-2">
+                    <div></div>
+                    <Button
+                      type="primary"
+                      icon={<ArrowUpOutlined />}
+                      onClick={() =>
+                        movePoint(
+                          selectedPoint.shapeIndex,
+                          selectedPoint.pointIndex,
+                          "up",
+                        )
+                      }
+                      block
+                      size="small"
+                    />
+                    <div></div>
 
-      {/* Step 4: Review & Pricing */}
-      {currentStep === 4 && (
-        <>
-          <ValidationPanel
-            validationErrors={validationErrors}
-            validateOrder={validateOrder}
-          />
-          <PricingPanel
-            totalArea={totalArea}
+                    <Button
+                      type="primary"
+                      icon={<ArrowLeftOutlined />}
+                      onClick={() =>
+                        movePoint(
+                          selectedPoint.shapeIndex,
+                          selectedPoint.pointIndex,
+                          "left",
+                        )
+                      }
+                      block
+                      size="small"
+                    />
+                    <div className="flex items-center justify-center text-xs font-medium bg-gray-100 rounded">
+                      {moveIncrement}"
+                    </div>
+                    <Button
+                      type="primary"
+                      icon={<ArrowRightOutlined />}
+                      onClick={() =>
+                        movePoint(
+                          selectedPoint.shapeIndex,
+                          selectedPoint.pointIndex,
+                          "right",
+                        )
+                      }
+                      block
+                      size="small"
+                    />
+
+                    <div></div>
+                    <Button
+                      type="primary"
+                      icon={<ArrowDownOutlined />}
+                      onClick={() =>
+                        movePoint(
+                          selectedPoint.shapeIndex,
+                          selectedPoint.pointIndex,
+                          "down",
+                        )
+                      }
+                      block
+                      size="small"
+                    />
+                    <div></div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 mt-2">
+                    <Button
+                      onClick={() => setSelectedPoint(null)}
+                      block
+                      size="small"
+                    >
+                      Deselect
+                    </Button>
+                    <Button
+                      danger
+                      onClick={() => {
+                        deletePoint(
+                          selectedPoint.shapeIndex,
+                          selectedPoint.pointIndex,
+                        );
+                        setSelectedPoint(null);
+                      }}
+                      block
+                      size="small"
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                </Space>
+              </Card>
+            )}
+
+            <DimensionInput
+              shapes={shapes}
+              updateShapes={updateShapes}
+              unit={unit}
+              setUnit={setUnit}
+            />
+          </>
+        )}
+
+        {/* Step 2: Drilling Holes */}
+        {currentStep === 2 && (
+          <DrillingHoles
             drillingHoles={drillingHoles}
-            totalPerimeter={totalPerimeter}
-            selectedMaterial={selectedMaterial}
-            selectedThickness={selectedThickness}
-            selectedColor={selectedColor}
-            selectedFinish={selectedFinish}
+            setDrillingHoles={setDrillingHoles}
+            isPlacingHole={isPlacingHole}
+            setIsPlacingHole={setIsPlacingHole}
+            setToolMode={setToolMode}
             shapes={shapes}
-            materialList={materialList}
           />
-        </>
-      )}
+        )}
 
-      {/* Shape Properties */}
-      {/* {selectedShape && currentStep === 1 && (
+        {/* Step 3: Material Selection */}
+        {currentStep === 3 && (
+          <MaterialSelector
+            selectedMaterial={selectedMaterial}
+            setSelectedMaterial={setSelectedMaterial}
+            selectedThickness={selectedThickness}
+            setSelectedThickness={setSelectedThickness}
+            selectedColor={selectedColor}
+            setSelectedColor={setSelectedColor}
+            selectedFinish={selectedFinish}
+            setSelectedFinish={setSelectedFinish}
+            materialList={materialList}
+            isMaterialLoading={isMaterialLoading}
+          />
+        )}
+
+        {/* Step 4: Review & Pricing */}
+        {currentStep === 4 && (
+          <>
+            <ValidationPanel
+              validationErrors={validationErrors}
+              validateOrder={validateOrder}
+            />
+            <PricingPanel
+              totalArea={totalArea}
+              drillingHoles={drillingHoles}
+              totalPerimeter={totalPerimeter}
+              selectedMaterial={selectedMaterial}
+              selectedThickness={selectedThickness}
+              selectedColor={selectedColor}
+              selectedFinish={selectedFinish}
+              shapes={shapes}
+              materialList={materialList}
+            />
+          </>
+        )}
+
+        {/* Shape Properties */}
+        {/* {selectedShape && currentStep === 1 && (
         <ShapeProperties
           shapes={shapes}
           selectedShape={selectedShape}
@@ -461,33 +483,34 @@ function LeftSidebar({
         />
       )} */}
 
-      {/* Settings */}
-      {currentStep === 1 && (
-        <Settings
-          gridSize={gridSize}
-          setGridSize={setGridSize}
-          gridVisible={gridVisible}
-          setGridVisible={setGridVisible}
-          snapToGrid={snapToGrid}
-          setSnapToGrid={setSnapToGrid}
-          showMeasurements={showMeasurements}
-          setShowMeasurements={setShowMeasurements}
-        />
-      )}
+        {/* Settings */}
+        {currentStep === 1 && (
+          <Settings
+            gridSize={gridSize}
+            setGridSize={setGridSize}
+            gridVisible={gridVisible}
+            setGridVisible={setGridVisible}
+            snapToGrid={snapToGrid}
+            setSnapToGrid={setSnapToGrid}
+            showMeasurements={showMeasurements}
+            setShowMeasurements={setShowMeasurements}
+          />
+        )}
 
-      {/* Navigation Buttons */}
-      <Card size="small" className="shadow-md">
-        <div className="flex gap-2">
-          {currentStep > 1 && (
-            <Button onClick={handlePrevStep} block size="large">
-              ← Previous
+        {/* Navigation Buttons */}
+        <Card size="small" className="shadow-md">
+          <div className="flex gap-2">
+            {currentStep > 1 && (
+              <Button onClick={handlePrevStep} block size="large">
+                ← Previous
+              </Button>
+            )}
+            <Button type="primary" onClick={handleNextStep} block size="large">
+              {currentStep === 4 ? "Submit Order" : "Next →"}
             </Button>
-          )}
-          <Button type="primary" onClick={handleNextStep} block size="large">
-            {currentStep === 4 ? "Submit Order" : "Next →"}
-          </Button>
-        </div>
-      </Card>
+          </div>
+        </Card>
+      </div>
     </div>
   );
 }

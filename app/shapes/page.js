@@ -1,7 +1,7 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import { Line } from "react-konva";
-import { message } from "antd";
+import { Button, message } from "antd";
 import { produce } from "immer";
 import ShapeTemplate from "./ShapeTemplate";
 import { useShapeList, useMaterialList } from "../api/shapeListApi";
@@ -22,6 +22,7 @@ const DxfEditor = () => {
   const router = useRouter();
 
   // State Management
+  const [showShapeTemplate, setShowShapeTemplate] = useState(false);
   const [shapes, setShapes] = useState([]);
   const [history, setHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
@@ -33,7 +34,7 @@ const DxfEditor = () => {
   const [gridVisible, setGridVisible] = useState(true);
   const [snapToGrid, setSnapToGrid] = useState(true);
   const [showMeasurements, setShowMeasurements] = useState(true);
-  const [stageSize, setStageSize] = useState({ width: 1200, height: 700 });
+  const [stageSize, setStageSize] = useState({ width: 1200, height: 800 });
   const [toolMode, setToolMode] = useState("select");
   const [gridSize, setGridSize] = useState(0.5);
   const [moveIncrement, setMoveIncrement] = useState(0.5);
@@ -974,20 +975,29 @@ const DxfEditor = () => {
   };
 
   return (
-    <div className="grid grid-cols-7 gap-1">
-      <div className="col-span-1">
-        <ShapeTemplate
-          shapeList={shapeList}
-          isLoading={isLoading}
-          isError={isError}
-          mutate={mutate}
-        />
-      </div>
+    <div
+      className={
+        showShapeTemplate ? "grid grid-cols-7 gap-1" : "grid grid-cols-6 gap-1"
+      }
+    >
+      {showShapeTemplate && (
+        <div className="col-span-1">
+          <ShapeTemplate
+            shapeList={shapeList}
+            isLoading={isLoading}
+            isError={isError}
+            mutate={mutate}
+          />
+        </div>
+      )}
+
       <div className="col-span-6">
         <div className="gap-6 p-4 bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen">
           <div className="grid grid-cols-12 gap-6">
             {/* Left Sidebar */}
             <LeftSidebar
+              showShapeTemplate={showShapeTemplate}
+              setShowShapeTemplate={setShowShapeTemplate}
               stageRef={stageRef}
               currentStep={currentStep}
               setCurrentStep={setCurrentStep}
@@ -1039,7 +1049,10 @@ const DxfEditor = () => {
             />
 
             {/* Main Canvas Area */}
-            <div className="col-span-8" ref={containerRef}>
+            <div
+              className={showShapeTemplate ? "col-span-8" : "col-span-9"}
+              ref={containerRef}
+            >
               <MainCanvasArea
                 setShapes={setShapes}
                 setHistoryIndex={setHistoryIndex}
