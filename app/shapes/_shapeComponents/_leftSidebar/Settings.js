@@ -23,26 +23,26 @@ function Settings({
       className="shadow-md"
     >
       <Space orientation="vertical" className="w-full" size="small">
-        {/* Grid Size */}
-        <div>
+        {/* Grid Size in mm */}
+        <div className="px-4" >
           <div className="flex justify-between items-center mb-1">
             <label className="text-sm font-medium">Grid Size</label>
-            <span className="text-sm text-blue-600 font-mono">{gridSize}"</span>
+            <span className="text-sm text-blue-600 font-mono">
+              {gridSize}mm
+            </span>
           </div>
           <Slider
             value={gridSize}
             onChange={(value) => setGridSize(value)}
-            min={0.1}
-            max={5}
-            step={0.1}
+            min={1}
+            max={100}
+            step={1}
             marks={{
-              0.1: '0.1"',
-              0.5: '0.5"',
-              1: '1"',
-              2: '2"',
-              3: '3"',
-              4: '4"',
-              5: '5"',
+              1: "1mm",
+              15: "15mm",
+              30: "30mm",
+              50: "50mm",
+              100: "100mm",
             }}
           />
         </div>

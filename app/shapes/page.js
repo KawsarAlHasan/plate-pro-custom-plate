@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { Line } from "react-konva";
 import { Button, message } from "antd";
 import { produce } from "immer";
@@ -11,6 +11,33 @@ import OrderConfirmation from "./_shapeComponents/OrderConfirmation";
 import MainCanvasArea from "./_shapeComponents/_mainCanvasArea/MainCanvasArea";
 import { fetcherWithTokenPostFormData } from "../api/api";
 import { showToast } from "nextjs-toast-notify";
+
+// ============= UNIT CONVERSION CONSTANTS =============
+// Base unit: 1 pixel = 1 mm on canvas
+const PIXELS_PER_MM = 1;
+const MM_PER_CM = 10;
+const CM_PER_METER = 100;
+const MM_PER_METER = 1000;
+
+// Pricing Configuration
+const PRICING_CONFIG = {
+  colorMultipliers: {
+    white: 1.0,
+    cream: 1.0,
+    gray: 1.0,
+    charcoal: 1.0,
+    black: 1.0,
+    brown: 1.0,
+    navy: 1.0,
+    green: 1.0,
+    terracotta: 1.0,
+    sand: 1.0,
+  },
+  complexShapeMultiplier: 1.0, // For shapes with more than 6 points
+  radiusCornerCost: 5, // Per rounded corner
+  drillingHoleCost: 1.5, // Per hole
+  minimumOrderPrice: 5,
+};
 
 const DxfEditor = () => {
   const searchParams = useSearchParams();
@@ -36,8 +63,8 @@ const DxfEditor = () => {
   const [showMeasurements, setShowMeasurements] = useState(true);
   const [stageSize, setStageSize] = useState({ width: 1200, height: 800 });
   const [toolMode, setToolMode] = useState("select");
-  const [gridSize, setGridSize] = useState(0.5);
-  const [moveIncrement, setMoveIncrement] = useState(0.5);
+  const [gridSize, setGridSize] = useState(10); // 10mm grid default
+  const [moveIncrement, setMoveIncrement] = useState(1); // 1mm increment
   const [unit, setUnit] = useState("mm"); // mm or cm
 
   // Shape dragging state
@@ -227,7 +254,8 @@ const DxfEditor = () => {
       let { x, y } = newPos;
 
       if (snapToGrid) {
-        const snapSize = gridSize * 12;
+        // Grid size is in mm, and 1 pixel = 1 mm
+        const snapSize = gridSize;
         x = Math.round(x / snapSize) * snapSize;
         y = Math.round(y / snapSize) * snapSize;
       }
@@ -247,7 +275,8 @@ const DxfEditor = () => {
     if (!selectedPoint) return;
     const updatedShapes = produce(shapes, (draft) => {
       const point = draft[shapeIndex].points[pointIndex];
-      const movePixels = moveIncrement * 12;
+      // moveIncrement is in mm, and 1 pixel = 1 mm
+      const movePixels = moveIncrement;
       switch (direction) {
         case "up":
           point[1] -= movePixels;
@@ -273,7 +302,7 @@ const DxfEditor = () => {
       let { x, y } = position;
 
       if (snapToGrid) {
-        const snapSize = gridSize * 12;
+        const snapSize = gridSize;
         x = Math.round(x / snapSize) * snapSize;
         y = Math.round(y / snapSize) * snapSize;
       }
@@ -321,28 +350,39 @@ const DxfEditor = () => {
     message.success("Point deleted");
   };
 
-  // Calculate Area and Perimeter
+  // ============= FIXED: Calculate Area and Perimeter =============
+  // Base assumption: 1 pixel = 1 mm
   const calculateMeasurements = (shapeList) => {
-    let totalArea = 0;
-    let totalPerimeter = 0;
+    let totalAreaInPixels = 0;
+    let totalPerimeterInPixels = 0;
 
     shapeList.forEach((shape) => {
       if (shape.visible && shape.points.length >= 3) {
         if (shape.closed) {
           const area = Math.abs(getPolygonArea(shape.points));
-          totalArea += area;
+          totalAreaInPixels += area;
         }
         const perimeter = getPolygonPerimeter(shape.points, shape.closed);
-        totalPerimeter += perimeter;
+        totalPerimeterInPixels += perimeter;
       }
     });
-    const areaSquareMeter = totalArea / 144;
-    const perimeterSquareMerer = totalPerimeter / 12;
 
-    setTotalArea(areaSquareMeter);
-    setTotalPerimeter(perimeterSquareMerer);
+    // Since 1 pixel = 1 mm:
+    // Area in pixels = Area in mm²
+    // Perimeter in pixels = Perimeter in mm
+
+    // Convert mm² to m²: divide by 1,000,000 (1000mm × 1000mm = 1m²)
+    const areaInSquareMeters =
+      totalAreaInPixels / (MM_PER_METER * MM_PER_METER);
+
+    // Convert mm to meters: divide by 1000
+    const perimeterInMeters = totalPerimeterInPixels / MM_PER_METER;
+
+    setTotalArea(areaInSquareMeters);
+    setTotalPerimeter(perimeterInMeters);
   };
 
+  // Polygon Area calculation using Shoelace formula
   const getPolygonArea = (points) => {
     let area = 0;
     const n = points.length;
@@ -356,6 +396,7 @@ const DxfEditor = () => {
     return Math.abs(area / 2);
   };
 
+  // Perimeter calculation
   const getPolygonPerimeter = (points, closed) => {
     let perimeter = 0;
 
@@ -414,7 +455,8 @@ const DxfEditor = () => {
 
   // Grid Generator
   const renderGrid = () => {
-    const gridSizePixels = gridSize * 12;
+    // gridSize is in mm, and 1 pixel = 1 mm
+    const gridSizePixels = gridSize;
     const gridLines = [];
     const width = stageSize.width / scale;
     const height = stageSize.height / scale;
@@ -782,10 +824,8 @@ const DxfEditor = () => {
           const distPrev = getDistance(shape.points[i], shape.points[prevIdx]);
           const distNext = getDistance(shape.points[i], shape.points[nextIdx]);
 
-          if (
-            corner.radius * 12 > distPrev / 2 ||
-            corner.radius * 12 > distNext / 2
-          ) {
+          // corner.radius is in mm, distPrev/distNext are in pixels (mm)
+          if (corner.radius > distPrev / 2 || corner.radius > distNext / 2) {
             errors.push(
               `Corner ${i + 1} radius is too large for the adjacent edges.`,
             );
@@ -830,6 +870,65 @@ const DxfEditor = () => {
     return new File([u8arr], filename, { type: mime });
   };
 
+  // Calculate pricing
+  const pricing = useMemo(() => {
+    let subtotal = 0;
+
+    // Get material and thickness data
+    const materialData = materialList?.find((m) => m.id === selectedMaterial);
+    const thicknessData = materialData?.variants?.find(
+      (v) => v.id === selectedThickness,
+    );
+
+    // Base price per sq m from thickness/variant
+    const basePrice = parseFloat(thicknessData?.price || 0);
+    const areaPrice = basePrice * 10 * totalArea;
+
+    if (areaPrice > 0) {
+      subtotal += areaPrice;
+    }
+
+    // Color multiplier
+    const colorMultiplier = PRICING_CONFIG.colorMultipliers[selectedColor] || 1;
+    if (selectedColor && colorMultiplier !== 1) {
+      const colorAdjustment = subtotal * (colorMultiplier - 1);
+      subtotal += colorAdjustment;
+    }
+
+    // Complex shape multiplier
+    const pointCount = shapes[0]?.points?.length || 0;
+    if (pointCount > 6) {
+      const complexityCharge =
+        subtotal * (PRICING_CONFIG.complexShapeMultiplier - 1);
+      subtotal += complexityCharge;
+    }
+
+    // Drilling holes
+    const drillingCost = drillingHoles.length * PRICING_CONFIG.drillingHoleCost;
+    if (drillingHoles.length > 0) {
+      subtotal += drillingCost;
+    }
+
+    // Apply minimum order price
+    const finalTotal = Math.max(subtotal, PRICING_CONFIG.minimumOrderPrice);
+    const minimumApplied = subtotal < PRICING_CONFIG.minimumOrderPrice;
+
+    return {
+      subtotal,
+      finalTotal,
+      minimumApplied,
+    };
+  }, [
+    totalArea,
+    selectedMaterial,
+    selectedThickness,
+    selectedColor,
+    selectedFinish,
+    shapes,
+    drillingHoles,
+    materialList,
+  ]);
+
   const handleSubmitOrder = async () => {
     if (!validateOrder()) {
       message.error("Please fix validation errors before submitting");
@@ -842,10 +941,6 @@ const DxfEditor = () => {
       (v) => v.id === selectedThickness,
     );
 
-    // Calculate total price
-    const basePrice = parseFloat(thicknessData?.price || 0);
-    const totalPrice = basePrice * totalArea;
-
     try {
       // Step 1: Export canvas as image
       const canvasImage = exportCanvasImage();
@@ -857,13 +952,13 @@ const DxfEditor = () => {
 
       // Step 2: Create main order
       const orderFormData = new FormData();
-      orderFormData.append("tatalArea", Math.round(totalArea));
+      orderFormData.append("tatalArea", totalArea);
       orderFormData.append("totalPerimeter", Math.round(totalPerimeter));
       orderFormData.append("material", materialData?.id || "");
       orderFormData.append("thickness", thicknessData?.id || "");
       orderFormData.append("color", selectedColor || "");
       orderFormData.append("totalDrilingHoles", drillingHoles.length);
-      orderFormData.append("total_price", Math.round(totalPrice));
+      orderFormData.append("total_price", Math.round(pricing.finalTotal));
 
       // Optional: Add finish if exists
       if (selectedFinish) {
@@ -1046,6 +1141,7 @@ const DxfEditor = () => {
               totalPerimeter={totalPerimeter}
               materialList={materialList}
               isMaterialLoading={isMaterialLoading}
+              handleSubmitOrder={handleSubmitOrder}
             />
 
             {/* Main Canvas Area */}

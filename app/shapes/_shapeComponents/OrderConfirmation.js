@@ -28,7 +28,7 @@ function OrderConfirmation({
 
   // Calculate estimated price
   const basePrice = parseFloat(thicknessData?.price || 0);
-  const estimatedPrice = Math.max(basePrice * totalArea, 100);
+  const estimatedPrice = Math.max(basePrice * totalArea, 10);
 
   const hasErrors = validationErrors && validationErrors.length > 0;
 

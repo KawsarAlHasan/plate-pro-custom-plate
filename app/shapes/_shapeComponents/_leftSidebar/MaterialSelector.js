@@ -124,7 +124,7 @@ function MaterialSelector({
                       <div>
                         <div className="font-medium">{variant.name}</div>
                         <div className="text-xs opacity-70">
-                          €{parseFloat(variant.price).toFixed(2)}/m²
+                          €{parseFloat(variant.price * 10).toFixed(2)}/m²
                         </div>
                       </div>
                     </Radio.Button>

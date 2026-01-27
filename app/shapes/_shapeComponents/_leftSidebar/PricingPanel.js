@@ -17,10 +17,10 @@ const PRICING_CONFIG = {
     terracotta: 1.0,
     sand: 1.0,
   },
-  complexShapeMultiplier: 1.2, // For shapes with more than 6 points
+  complexShapeMultiplier: 1.0, // For shapes with more than 6 points
   radiusCornerCost: 5, // Per rounded corner
-  drillingHoleCost: 3, // Per hole
-  minimumOrderPrice: 10,
+  drillingHoleCost: 1.5, // Per hole
+  minimumOrderPrice: 5,
 };
 
 function PricingPanel({
@@ -46,7 +46,8 @@ function PricingPanel({
     );
 
     // Base price per sq m from thickness/variant
-    const basePrice = parseFloat(thicknessData?.price || 0);
+    const basePrice = parseFloat(thicknessData?.price || 0) * 10;
+
     const areaPrice = basePrice * totalArea;
 
     if (areaPrice > 0) {

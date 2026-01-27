@@ -154,9 +154,7 @@ function MainCanvasArea({
               getPerpendicularDirection(p1, p2).y * dragOffset -
               10 / scale
             }
-            text={`${dragOffset > 0 ? "+" : ""}${(dragOffset / 12).toFixed(
-              2,
-            )}"`}
+            text={`${dragOffset > 0 ? "+" : ""}${dragOffset.toFixed(1)}mm`}
             fontSize={11 / scale}
             fill="#722ed1"
             fontStyle="bold"
@@ -224,6 +222,16 @@ function MainCanvasArea({
       maxX: Math.max(...xs),
       maxY: Math.max(...ys),
     };
+  };
+
+  // Format distance based on unit (1 pixel = 1 mm)
+  const formatDistance = (distanceInPixels) => {
+    if (unit === "mm") {
+      return `${distanceInPixels.toFixed(1)}mm`;
+    } else {
+      // Convert mm to cm
+      return `${(distanceInPixels / 10).toFixed(2)}cm`;
+    }
   };
 
   return (
@@ -447,6 +455,7 @@ function MainCanvasArea({
                           );
                         })}
 
+                      {/* Side measurements - 1 pixel = 1 mm */}
                       {showMeasurements &&
                         isSelected &&
                         shape.points.map((point, idx) => {
@@ -457,22 +466,22 @@ function MainCanvasArea({
                             shape.points[(idx + 1) % shape.points.length];
                           const midX = (point[0] + nextPoint[0]) / 2;
                           const midY = (point[1] + nextPoint[1]) / 2;
-                          const distance = Math.sqrt(
+
+                          // Distance in pixels = Distance in mm (since 1 pixel = 1 mm)
+                          const distanceInMm = Math.sqrt(
                             Math.pow(nextPoint[0] - point[0], 2) +
                               Math.pow(nextPoint[1] - point[1], 2),
                           );
 
-                          const distanceInUnit =
-                            unit === "mm"
-                              ? ((distance * 25.4) / 12).toFixed(1) + "mm"
-                              : ((distance * 2.54) / 12).toFixed(2) + "cm";
+                          // Format based on selected unit
+                          const displayText = formatDistance(distanceInMm);
 
                           return (
                             <Text
                               key={`measure-${idx}`}
                               x={midX}
                               y={midY - 15 / scale}
-                              text={distanceInUnit}
+                              text={displayText}
                               fontSize={11 / scale}
                               fill="#000"
                               fontStyle="bold"

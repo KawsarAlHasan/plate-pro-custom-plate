@@ -32,7 +32,6 @@ import PricingPanel from "./_leftSidebar/PricingPanel";
 import DimensionInput from "./_leftSidebar/DimensionInput";
 import ValidationPanel from "./_leftSidebar/ValidationPanel";
 import { showToast } from "nextjs-toast-notify";
-import ShapeProperties from "./_leftSidebar/ShapeProperties";
 
 function LeftSidebar({
   showShapeTemplate,
@@ -103,6 +102,7 @@ function LeftSidebar({
   /* Material list */
   materialList,
   isMaterialLoading,
+  handleSubmitOrder,
 }) {
   const toggleShapeLock = (check) => {
     const updatedShapes = shapes.map((shape) =>
@@ -140,7 +140,8 @@ function LeftSidebar({
     } else {
       // Final validation
       if (validateOrder()) {
-        setShowValidationModal(true);
+        // setShowValidationModal(true);
+        handleSubmitOrder();
       } else {
         message.error("Please fix validation errors before submitting");
       }

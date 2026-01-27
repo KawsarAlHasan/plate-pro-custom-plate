@@ -16,6 +16,9 @@ import { produce } from "immer";
 
 const { Option } = Select;
 
+// Constants: 1 pixel = 1 mm
+const MM_PER_CM = 10;
+
 function DimensionInput({ shapes, updateShapes, unit, setUnit }) {
   const [dimensions, setDimensions] = useState([]);
   const [totalWidth, setTotalWidth] = useState(0);
@@ -27,7 +30,7 @@ function DimensionInput({ shapes, updateShapes, unit, setUnit }) {
       const shape = shapes[0];
       const newDimensions = [];
 
-      // Calculate bounding box
+      // Calculate bounding box (in pixels = mm)
       const xs = shape.points.map((p) => p[0]);
       const ys = shape.points.map((p) => p[1]);
       const minX = Math.min(...xs);
@@ -35,6 +38,7 @@ function DimensionInput({ shapes, updateShapes, unit, setUnit }) {
       const minY = Math.min(...ys);
       const maxY = Math.max(...ys);
 
+      // Width and height in pixels (= mm)
       setTotalWidth(maxX - minX);
       setTotalHeight(maxY - minY);
 
@@ -44,7 +48,7 @@ function DimensionInput({ shapes, updateShapes, unit, setUnit }) {
         const next = shape.points[(i + 1) % shape.points.length];
         const dx = next[0] - current[0];
         const dy = next[1] - current[1];
-        const length = Math.sqrt(dx * dx + dy * dy);
+        const length = Math.sqrt(dx * dx + dy * dy); // length in pixels = mm
         const angle = Math.atan2(dy, dx) * (180 / Math.PI);
 
         newDimensions.push({
@@ -52,7 +56,7 @@ function DimensionInput({ shapes, updateShapes, unit, setUnit }) {
           side: `Side ${i + 1}`,
           startPoint: i + 1,
           endPoint: ((i + 1) % shape.points.length) + 1,
-          length: length,
+          length: length, // in mm (pixels)
           angle: angle,
         });
       }
@@ -61,22 +65,24 @@ function DimensionInput({ shapes, updateShapes, unit, setUnit }) {
     }
   }, [shapes]);
 
-  // Convert pixels to unit
+  // Convert pixels (mm) to display unit
   const pixelsToUnit = (pixels) => {
-    const inches = pixels / 12;
+    // pixels = mm (since 1 pixel = 1 mm)
     if (unit === "mm") {
-      return inches * 25.4;
+      return pixels;
     } else {
-      return inches * 2.54;
+      // Convert mm to cm
+      return pixels / MM_PER_CM;
     }
   };
 
-  // Convert unit to pixels
+  // Convert display unit to pixels (mm)
   const unitToPixels = (value) => {
     if (unit === "mm") {
-      return (value / 25.4) * 12;
+      return value;
     } else {
-      return (value / 2.54) * 12;
+      // Convert cm to mm
+      return value * MM_PER_CM;
     }
   };
 
@@ -95,6 +101,7 @@ function DimensionInput({ shapes, updateShapes, unit, setUnit }) {
 
     if (currentLength === 0) return;
 
+    // Convert input to pixels (mm)
     const newPixelLength = unitToPixels(newLength);
     const scale = newPixelLength / currentLength;
 
@@ -124,6 +131,7 @@ function DimensionInput({ shapes, updateShapes, unit, setUnit }) {
     const currentWidth = maxX - minX;
     const currentHeight = maxY - minY;
 
+    // Convert input to pixels (mm)
     const newPixelValue = unitToPixels(value);
 
     let scaleX = 1;
@@ -212,10 +220,12 @@ function DimensionInput({ shapes, updateShapes, unit, setUnit }) {
                 Width ({unit})
               </label>
               <InputNumber
-                value={parseFloat(pixelsToUnit(totalWidth).toFixed(2))}
+                value={parseFloat(
+                  pixelsToUnit(totalWidth).toFixed(unit === "mm" ? 1 : 2),
+                )}
                 onChange={(value) => handleTotalDimensionChange("width", value)}
-                min={10}
-                step={unit === "mm" ? 10 : 1}
+                min={1}
+                step={unit === "mm" ? 1 : 0.1}
                 style={{ width: "100%" }}
               />
             </div>
@@ -224,12 +234,14 @@ function DimensionInput({ shapes, updateShapes, unit, setUnit }) {
                 Height ({unit})
               </label>
               <InputNumber
-                value={parseFloat(pixelsToUnit(totalHeight).toFixed(2))}
+                value={parseFloat(
+                  pixelsToUnit(totalHeight).toFixed(unit === "mm" ? 1 : 2),
+                )}
                 onChange={(value) =>
                   handleTotalDimensionChange("height", value)
                 }
-                min={10}
-                step={unit === "mm" ? 10 : 1}
+                min={1}
+                step={unit === "mm" ? 1 : 0.1}
                 style={{ width: "100%" }}
               />
             </div>
@@ -273,7 +285,9 @@ function DimensionInput({ shapes, updateShapes, unit, setUnit }) {
 
               <Space.Compact>
                 <InputNumber
-                  value={parseFloat(pixelsToUnit(dim.length).toFixed(2))}
+                  value={parseFloat(
+                    pixelsToUnit(dim.length).toFixed(unit === "mm" ? 1 : 2),
+                  )}
                   onChange={(value) => handleDimensionChange(dim.key, value)}
                   min={1}
                   step={unit === "mm" ? 1 : 0.1}
@@ -284,7 +298,7 @@ function DimensionInput({ shapes, updateShapes, unit, setUnit }) {
                   value={unit}
                   size="small"
                   disabled
-                  style={{ width: 60, textAlign: "center" }}
+                  style={{ width: 50, textAlign: "center" }}
                 />
               </Space.Compact>
 

@@ -133,9 +133,9 @@ function page() {
               size="small"
             />
           </Tooltip>
-          <Tooltip title="Download">
+          {/* <Tooltip title="Download">
             <Button icon={<DownloadOutlined />} size="small" />
-          </Tooltip>
+          </Tooltip> */}
         </Space>
       ),
       width: 120,
@@ -162,9 +162,9 @@ function page() {
                 </Text>
               </div>
             </div>
-            <Button type="primary" size="large" icon={<DownloadOutlined />}>
+            {/* <Button type="primary" size="large" icon={<DownloadOutlined />}>
               Download All
-            </Button>
+            </Button> */}
           </div>
         </Card>
 
@@ -248,14 +248,14 @@ function page() {
           <Button key="close" onClick={() => setModalVisible(false)}>
             Close
           </Button>,
-          <Button
-            key="download"
-            type="primary"
-            icon={<DownloadOutlined />}
-            onClick={() => console.log("Download", selectedOrder)}
-          >
-            Download
-          </Button>,
+          // <Button
+          //   key="download"
+          //   type="primary"
+          //   icon={<DownloadOutlined />}
+          //   onClick={() => console.log("Download", selectedOrder)}
+          // >
+          //   Download
+          // </Button>,
         ]}
         width={800}
       >
@@ -277,9 +277,9 @@ function page() {
               <Descriptions.Item label="Total Area">
                 {parseFloat(selectedOrder.tatalArea).toFixed(2)} m²
               </Descriptions.Item>
-              <Descriptions.Item label="Perimeter">
+              {/* <Descriptions.Item label="Perimeter">
                 {parseFloat(selectedOrder.totalPerimeter).toFixed(2)} m
-              </Descriptions.Item>
+              </Descriptions.Item> */}
               <Descriptions.Item label="Drilling Holes">
                 {selectedOrder.totalDrilingHoles}
               </Descriptions.Item>
@@ -288,7 +288,7 @@ function page() {
                   ${parseFloat(selectedOrder.total_price).toLocaleString()}
                 </Text>
               </Descriptions.Item>
-              <Descriptions.Item label="Created At" span={2}>
+              <Descriptions.Item label="Order Date" span={2}>
                 {new Date(selectedOrder.created_at).toLocaleString("en-US")}
               </Descriptions.Item>
             </Descriptions>
