@@ -34,6 +34,8 @@ import ValidationPanel from "./_leftSidebar/ValidationPanel";
 import { showToast } from "nextjs-toast-notify";
 
 function LeftSidebar({
+  lang,
+  shapesText,
   showShapeTemplate,
   setShowShapeTemplate,
   /* Steps */
@@ -178,12 +180,15 @@ function LeftSidebar({
           onClick={() => setShowShapeTemplate(!showShapeTemplate)}
           className="shadow-sm"
         >
-          {showShapeTemplate ? "Hide Template" : "Show Shape Template"}
+          {showShapeTemplate
+            ? shapesText?.hideTemplates
+            : shapesText?.showTemplates}
         </Button>
       </div>
 
       {/* Step Indicator */}
       <StepIndicator
+        shapesText={shapesText}
         currentStep={currentStep}
         setCurrentStep={setCurrentStep}
         shapes={shapes}
@@ -427,6 +432,8 @@ function LeftSidebar({
         {/* Step 2: Drilling Holes */}
         {currentStep === 2 && (
           <DrillingHoles
+            lang={lang}
+            holesText={shapesText?.holes}
             drillingHoles={drillingHoles}
             setDrillingHoles={setDrillingHoles}
             isPlacingHole={isPlacingHole}
@@ -439,6 +446,8 @@ function LeftSidebar({
         {/* Step 3: Material Selection */}
         {currentStep === 3 && (
           <MaterialSelector
+            lang={lang}
+            materialText={shapesText?.material}
             selectedMaterial={selectedMaterial}
             setSelectedMaterial={setSelectedMaterial}
             selectedThickness={selectedThickness}
@@ -456,10 +465,12 @@ function LeftSidebar({
         {currentStep === 4 && (
           <>
             <ValidationPanel
+              lang={lang}
               validationErrors={validationErrors}
               validateOrder={validateOrder}
             />
             <PricingPanel
+              lang={lang}
               totalArea={totalArea}
               drillingHoles={drillingHoles}
               totalPerimeter={totalPerimeter}

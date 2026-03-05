@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import { useAuthModal } from "../../contex/AuthModalContext";
 
-export default function Banner() {
+export default function Banner({ bannerText }) {
   const router = useRouter();
   const { openAuthModal } = useAuthModal();
 
@@ -21,18 +21,16 @@ export default function Banner() {
       <section className='w-full bg-[url("/bannerHome.png")] bg-cover bg-center py-14 lg:py-2'>
         <div className="w-full aspect-[1920/752] px-14 text-white flex items-center">
           <div>
-            <h1 className="text-5xl">Design Your Own Floor Plates</h1>
+            <h1 className="text-5xl">{bannerText?.title}</h1>
             <p className="max-w-[640px] pt-8 pb-[51px]">
-              Customize, preview, and order — all in one place. Create the
-              perfect floor plate for your project with instant pricing and CAD
-              preview
+              {bannerText?.description}
             </p>
 
             <Button
               onClick={handleStart}
               className="w-fit! px-20! text-xl! py-7! border-0! bg-black! text-white!"
             >
-              Get started
+              {bannerText?.buttonText}
             </Button>
           </div>
         </div>

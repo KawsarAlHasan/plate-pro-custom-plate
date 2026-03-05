@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import { API } from "../../api/api";
 
-function Signup() {
+function Signup({ signupText }) {
   const [form] = Form.useForm();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -25,7 +25,7 @@ function Signup() {
       const res = await API.post("/api/auth/register/", payload);
 
       if (res.status === 201) {
-        message.success("Registration successful! Please login.");
+        message.success(signupText?.successMessage);
         Cookies.set("token", res?.data?.tokens?.access);
         router.push("/");
       }
@@ -50,9 +50,9 @@ function Signup() {
       {/* Form Section */}
       <div className="px-4 lg:px-8 py-6 lg:py-10">
         <h1 className="text-3xl font-bold text-gray-800 text-center mb-2">
-          Create Account
+          {signupText?.title}
         </h1>
-        <p className="text-gray-500 text-center mb-8">Sign up to get started</p>
+        <p className="text-gray-500 text-center mb-8">{signupText?.subtitle}</p>
 
         <Form
           form={form}
@@ -64,11 +64,15 @@ function Signup() {
         >
           {/* Full Name Field */}
           <Form.Item
-            label={<span className="text-gray-700 font-medium">Full Name</span>}
+            label={
+              <span className="text-gray-700 font-medium">
+                {signupText?.name}
+              </span>
+            }
             name="full_name"
             rules={[
-              { required: true, message: "Please input your full name!" },
-              { min: 2, message: "Name must be at least 2 characters!" },
+              { required: true, message: signupText?.nameRequired },
+              { min: 2, message: signupText?.nameMin },
             ]}
           >
             <Input
@@ -82,12 +86,14 @@ function Signup() {
           {/* Email Field */}
           <Form.Item
             label={
-              <span className="text-gray-700 font-medium">Email Address</span>
+              <span className="text-gray-700 font-medium">
+                {signupText?.email}
+              </span>
             }
             name="email"
             rules={[
-              { required: true, message: "Please input your email!" },
-              { type: "email", message: "Please enter a valid email!" },
+              { required: true, message: signupText?.emailRequired },
+              { type: "email", message: signupText?.emailInvalid },
             ]}
           >
             <Input
@@ -100,15 +106,18 @@ function Signup() {
 
           {/* Password Field */}
           <Form.Item
-            label={<span className="text-gray-700 font-medium">Password</span>}
+            label={
+              <span className="text-gray-700 font-medium">
+                {signupText?.password}
+              </span>
+            }
             name="password"
             rules={[
-              { required: true, message: "Please input your password!" },
+              { required: true, message: signupText?.passwordRequired },
               {
                 pattern:
                   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
-                message:
-                  "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character and be at least 8 characters long!",
+                message: signupText?.passwordPattern,
               },
             ]}
           >
@@ -124,20 +133,20 @@ function Signup() {
           <Form.Item
             label={
               <span className="text-gray-700 font-medium">
-                Confirm Password
+                {signupText?.confirmPassword}
               </span>
             }
             name="password2"
             dependencies={["password"]}
             rules={[
-              { required: true, message: "Please confirm your password!" },
+              { required: true, message: signupText?.confirmPasswordRequired },
               ({ getFieldValue }) => ({
                 validator(_, value) {
                   if (!value || getFieldValue("password") === value) {
                     return Promise.resolve();
                   }
                   return Promise.reject(
-                    new Error("The two passwords do not match!"),
+                    new Error(signupText?.passwordsDoNotMatch),
                   );
                 },
               }),
@@ -160,7 +169,7 @@ function Signup() {
               size="large"
               className="w-full h-12 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 border-0 rounded-lg font-semibold text-base shadow-lg hover:shadow-xl transition-all duration-300"
             >
-              Create Account
+              {signupText?.submit}
             </Button>
           </Form.Item>
         </Form>
@@ -168,12 +177,12 @@ function Signup() {
         {/* Login Link */}
         <div className="text-center mt-6">
           <p className="text-gray-600">
-            Already have an account?{" "}
+            {signupText?.haveAccount}?{" "}
             <Link
               href="/auth/signin"
               className="text-red-600 hover:text-red-700 font-semibold transition-colors"
             >
-              Sign in here
+              {signupText?.signInHere}
             </Link>
           </p>
         </div>

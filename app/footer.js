@@ -6,7 +6,9 @@ import { CiClock2 } from "react-icons/ci";
 import { FaFacebookSquare, FaInstagramSquare } from "react-icons/fa";
 import { IoCallOutline } from "react-icons/io5";
 
-export default function Footer() {
+export default function Footer({ dict }) {
+  const footerText = dict.footer;
+
   return (
     <section id="footer" className="w-full bg-black">
       <div className="w-full max-w-[1920px] mx-auto py-12 px-5 xl:py-24 xl:px-20">
@@ -17,73 +19,75 @@ export default function Footer() {
           <div className="footerMenu w-full text-white flex flex-wrap gap-8 justify-between">
             {/* --menu-- */}
             <div>
-              <h5 className="text-2xl">Menu</h5>
+              <h5 className="text-2xl">{footerText.menu}</h5>
               <ul className="footerMenuList mt-5">
                 <li>
-                  <Link href={"/"}>Home</Link>
+                  <Link href={"/"}>{footerText.home}</Link>
                 </li>
                 <li>
-                  <Link href={"/about-us"}>About us</Link>
+                  <Link href={"/about-us"}>{footerText.about}</Link>
                 </li>
                 <li>
-                  <Link href={"/how-it-works"}>How it works</Link>
+                  <Link href={"/how-it-works"}>{footerText.howItWorks}</Link>
                 </li>
                 <li>
-                  <Link href={"/contact"}> Contact</Link>
+                  <Link href={"/contact"}>{footerText.contact}</Link>
                 </li>
               </ul>
             </div>
             {/* --Terms & Conditions-- */}
             <div>
-              <h5 className="text-2xl">Terms & Conditions</h5>
+              <h5 className="text-2xl">{footerText.termsAndConditions}</h5>
               <ul className="footerMenuList mt-5">
-                <li>Privacy Policies</li>
-                <li>Terms & Conditions</li>
-                <li>Delivery Policy</li>
-                <li>Order cancellation Policy</li>
+                <li>{footerText.privacyPolicies}</li>
+                <li>{footerText.termsAndConditionsLink}</li>
+                <li>{footerText.deliveryPolicy}</li>
+                <li>{footerText.orderCancellationPolicy}</li>
               </ul>
             </div>
+
             {/* --Company Data-- */}
             <div>
-              <h5 className="text-2xl">Company Data</h5>
+              <h5 className="text-2xl">{footerText.companyData}</h5>
               <ul className="footerMenuList mt-5">
-                <li>Vloerplaat</li>
+                <li>{footerText.companyName}</li>
                 <li>
-                  <a href="tell:0527304050">0527304050</a>
+                  <a href="tell:0527304050">{footerText.phone}</a>
                 </li>
                 <li>
-                  <a href="mailto: customerservicekachelpand@gmail.com">
-                    customerservicekachelpand@gmail.com
+                  <a href="mailto:customerservicekachelpand@gmail.com">
+                    {footerText.email}
                   </a>
                 </li>
-                <li>Kraggenburg , Netherlands</li>
+                <li>{footerText.address}</li>
               </ul>
             </div>
+
             {/* ---Contact--- */}
             <div>
-              <h5 className="text-2xl">Contact</h5>
+              <h5 className="text-2xl">{footerText.contactTitle}</h5>
               <ul className="footerMenuList mt-5">
                 <li className="flex items-baseline gap-2">
                   <span>
                     <IoCallOutline />
                   </span>
-                  <span>0527304050</span>
+                  <span>{footerText.phone}</span>
                 </li>
                 <li className="flex items-baseline gap-2">
                   <span>
                     <BsEnvelope />
                   </span>
-                  <span>customerservicekachelpand@gmail.com</span>
+                  <span>{footerText.email}</span>
                 </li>
                 <li className="flex items-baseline gap-2">
                   <span>
                     <CiClock2 />
                   </span>
-                  <span>Monday - Friday 09 : 00 - 17 : 00</span>
+                  <span>{footerText.openingHours}</span>
                 </li>
               </ul>
               <div className="mt-6">
-                <h5 className="text-2xl">Follow Us On our Socials</h5>
+                <h5 className="text-2xl">{footerText.followUs}</h5>
                 <div className="flex gap-5 ">
                   <span>
                     <FaFacebookSquare />

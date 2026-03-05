@@ -20,6 +20,8 @@ import {
 import React, { useState } from "react";
 
 function DrillingHoles({
+  lang,
+  holesText,
   drillingHoles,
   setDrillingHoles,
   isPlacingHole,
@@ -38,13 +40,13 @@ function DrillingHoles({
   const startPlacingHole = () => {
     setIsPlacingHole(true);
     setToolMode("place-hole");
-    message.info("Click inside the shape to place a drilling hole");
+    message.info(holesText?.placeHoleMessage);
   };
 
   // Delete hole
   const deleteHole = (holeId) => {
     setDrillingHoles(drillingHoles.filter((h) => h.id !== holeId));
-    message.success("Hole deleted");
+    message.success(holesText?.holeDeleted);
   };
 
   // Start editing hole position
@@ -62,7 +64,7 @@ function DrillingHoles({
       ),
     );
     setEditingHole(null);
-    message.success("Hole position updated");
+    message.success(holesText?.holePositionUpdated);
   };
 
   // Calculate distance from edge
@@ -97,7 +99,7 @@ function DrillingHoles({
       ),
     },
     {
-      title: "Size",
+      title: holesText?.size,
       dataIndex: "index",
       key: "6mm",
       width: 80,
@@ -138,7 +140,7 @@ function DrillingHoles({
     //     ),
     // },
     {
-      title: "Actions",
+      title: holesText?.actions,
       key: "actions",
       width: 80,
       render: (_, record) => (
@@ -149,7 +151,7 @@ function DrillingHoles({
               size="small"
               onClick={() => saveHolePosition(record.id)}
             >
-              Save
+              {holesText?.save}
             </Button>
           ) : (
             <>
@@ -159,7 +161,7 @@ function DrillingHoles({
                 onClick={() => startEditingHole(record)}
               /> */}
               <Popconfirm
-                title="Delete this hole?"
+                title={holesText?.deleteTitle}
                 onConfirm={() => deleteHole(record.id)}
                 okText="Yes"
                 cancelText="No"
@@ -180,7 +182,7 @@ function DrillingHoles({
     <Card
       title={
         <div className="flex items-center justify-between">
-          <span>🕳️ Drilling Holes</span>
+          <span>🕳️ {holesText?.drillingHoles}</span>
           <Badge
             count={drillingHoles.length}
             style={{ backgroundColor: isValid ? "#52c41a" : "#ff4d4f" }}
@@ -195,34 +197,34 @@ function DrillingHoles({
         {!isValid ? (
           <Alert
             type="warning"
-            title={`${holesNeeded} more hole${holesNeeded > 1 ? "s" : ""} required`}
-            description="Minimum 1 drilling holes are required for mounting."
+            title={
+              lang === "en"
+                ? `${holesNeeded} more hole${holesNeeded > 1 ? "s" : ""} required`
+                : `Nog ${holesNeeded} gat${holesNeeded > 1 ? "en" : ""} nodig`
+            }
+            description={holesText?.warningMessage}
             showIcon
           />
         ) : (
-          <Alert
-            type="success"
-            title="Minimum holes requirement met ✓"
-            showIcon
-          />
+          <Alert type="success" title={holesText?.successMessage} showIcon />
         )}
 
         {/* Hole Specifications */}
         <div className="bg-blue-50 p-3 rounded-lg">
           <div className="text-sm font-medium text-blue-700 mb-1">
-            Hole Specifications
+            {holesText?.holeSpecs}
           </div>
           <div className="grid grid-cols-2 gap-2 text-sm">
             <div>
-              <span className="text-gray-500">Diameter:</span>
+              <span className="text-gray-500">{holesText?.diameter}:</span>
               <span className="ml-2 font-medium">
-                {HOLE_DIAMETER}mm (fixed)
+                {HOLE_DIAMETER}mm ({holesText?.fixed})
               </span>
             </div>
             <div>
-              <span className="text-gray-500">Placed:</span>
+              <span className="text-gray-500">{holesText?.placed}:</span>
               <span className="ml-2 font-medium">
-                {drillingHoles.length} holes
+                {drillingHoles.length} {holesText?.title}
               </span>
             </div>
           </div>
@@ -239,20 +241,20 @@ function DrillingHoles({
           className={isPlacingHole ? "animate-pulse" : ""}
         >
           {isPlacingHole
-            ? "Click on Canvas to Place Hole..."
-            : "Add Drilling Hole"}
+            ? holesText?.addingLoading
+            : holesText?.addDrillingHole}
         </Button>
 
         {isPlacingHole && (
           <Alert
             type="info"
-            title="Placing Mode Active"
-            description="Click inside the shape boundary to place a 6mm drilling hole."
+            title={holesText?.pricingAlertTitle}
+            description={holesText?.pricingAlertDesc}
             showIcon
           />
         )}
 
-        <Divider style={{ margin: "8px 0" }}>Placed Holes</Divider>
+        <Divider style={{ margin: "8px 0" }}>{holesText?.placedHoles}</Divider>
 
         {/* Holes Table */}
         {drillingHoles.length > 0 ? (
@@ -266,7 +268,7 @@ function DrillingHoles({
         ) : (
           <div className="text-center text-gray-400 py-4">
             <AimOutlined style={{ fontSize: 32 }} />
-            <div className="mt-2">No holes placed yet</div>
+            <div className="mt-2">{holesText?.noHoles}</div>
           </div>
         )}
       </Space>

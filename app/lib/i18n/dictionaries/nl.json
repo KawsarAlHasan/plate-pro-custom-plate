@@ -1,0 +1,278 @@
+{
+  "navigation": {
+    "home": "Home",
+    "about": "Over ons",
+    "howItWorks": "Hoe het werkt",
+    "contact": "Contact",
+    "login": "Inloggen",
+    "signup": "Registreren",
+    "logout": "Uitloggen",
+    "language": "Taal",
+    "myOrders": "Mijn bestellingen",
+    "successMessage": "Profiel succesvol bijgewerkt!",
+    "myProfile": "Mijn Profiel",
+    "clickChange": "Klik om je profielfoto te wijzigen",
+    "emailAddress": "E-mailadres",
+    "fullName": "Volledige naam",
+    "fullNameRequired": "Vul uw volledige naam in",
+    "fullNamePlaceholder": "Voer uw volledige naam in",
+    "phoneNumber": "Telefoonnummer",
+    "phoneValid": "Vul een geldig telefoonnummer in",
+    "phonePlaseholder": "Voer uw telefoonnummer in",
+    "saveButton": "Wijzigingen opslaan",
+    "saving": "Besparing...",
+    "cancelButton": "Annuleren"
+  },
+  "home": {
+    "banner": {
+      "title": "Ontwerp Uw Eigen Vloerplaten",
+      "description": "Personaliseer, bekijk een voorbeeld en bestel — alles op één plek. Creëer de perfecte vloerplaat voor uw project met directe prijsberekening en CAD-voorbeeld.",
+      "buttonText": "Aan de slag"
+    },
+    "featuredShapes": {
+      "title": "Uitgelichte vorm en maat",
+      "buttonText": "Aan de slag"
+    },
+    "howItWorks": {
+      "title": "Hoe werkt het",
+      "description": "Wij creëren slimme, gebruiksvriendelijke tools die het ontwerpen en bestellen van vloerplaten vereenvoudigen. Ons doel is om lay-outaanpassing snel, nauwkeurig en moeiteloos te maken voor iedereen.",
+      "steps": [
+        {
+          "mainTitle": "Stap 1",
+          "title": "Selecteer uw plaattype",
+          "description": "Kies de vloerplaat die bij uw behoeften past. Bekijk verschillende afmetingen en vormen om de optie te vinden die het beste bij uw ruimte aansluit."
+        },
+        {
+          "mainTitle": "Stap 2",
+          "title": "Selecteer uw vloerafmeting",
+          "description": "Kies de gewenste afmetingen voor uw vloerplaat. Selecteer de juiste maat die perfect aansluit bij uw project."
+        },
+        {
+          "mainTitle": "Stap 3",
+          "title": "Plaats uw bestelling",
+          "description": "Controleer uw selectie en rond uw bestelling eenvoudig af. Wij zorgen voor een snelle en betrouwbare verwerking."
+        },
+        {
+          "mainTitle": "Stap 4",
+          "title": "Selecteer uw plaattype",
+          "description": "Kies de vloerplaat die bij uw behoeften past. Bekijk verschillende afmetingen en vormen om de optie te vinden die het beste bij uw ruimte aansluit."
+        },
+        {
+          "mainTitle": "Stap 5",
+          "title": "Selecteer uw vloerafmeting",
+          "description": "Kies de gewenste afmetingen voor uw vloerplaat. Selecteer de juiste maat die perfect aansluit bij uw project."
+        },
+        {
+          "mainTitle": "Stap 6",
+          "title": "Plaats uw bestelling",
+          "description": "Controleer uw selectie en rond uw bestelling eenvoudig af. Wij zorgen voor een snelle en betrouwbare verwerking."
+        }
+      ]
+    },
+    "getStarted": {
+      "title": "Neem contact met ons op",
+      "description": "Stuur ons een e-mail om in contact te blijven",
+      "your_email": "Uw e-mailadres",
+      "buttonText": "Aan de slag"
+    }
+  },
+  "auth": {
+    "signin": {
+      "title": "Welkom terug",
+      "subtitle": "Voer je gegevens in om door te gaan",
+      "email": "E-mailadres",
+      "emailRequired": "Vul je e-mailadres in!",
+      "emailInvalid": "Voer een geldig e-mailadres in!",
+      "password": "Wachtwoord",
+      "passwordRequired": "Vul je wachtwoord in!",
+      "passwordPlaceholder": "Voer je wachtwoord in",
+      "submit": "Inloggen",
+      "forgotPassword": "Wachtwoord vergeten?",
+      "rememberMe": "Onthoud mij",
+      "noAccount": "Heb je nog geen account",
+      "signUpHere": "Registreer je hier",
+      "successMessage": "Succesvol ingelogd!",
+      "errorMessage": "Controleer de velden en probeer het opnieuw."
+    },
+    "signup": {
+      "title": "Account aanmaken",
+      "subtitle": "Meld je aan om te beginnen",
+      "name": "Volledige naam",
+      "nameRequired": "Vul je volledige naam in!",
+      "nameMin": "Naam moet minimaal 2 tekens bevatten!",
+      "email": "E-mailadres",
+      "emailRequired": "Vul je e-mailadres in!",
+      "emailInvalid": "Voer een geldig e-mailadres in!",
+      "password": "Wachtwoord",
+      "passwordRequired": "Vul je wachtwoord in!",
+      "passwordPattern": "Het wachtwoord moet minimaal 8 tekens lang zijn en ten minste één hoofdletter, één kleine letter, één cijfer en één speciaal teken bevatten!",
+      "confirmPassword": "Bevestig wachtwoord",
+      "confirmPasswordRequired": "Bevestig je wachtwoord!",
+      "passwordsDoNotMatch": "De twee wachtwoorden komen niet overeen!",
+      "submit": "Account aanmaken",
+      "haveAccount": "Heb je al een account",
+      "signInHere": "Log hier in",
+      "successMessage": "Account succesvol aangemaakt!"
+    },
+    "forgot": {
+      "title": "Wachtwoord vergeten",
+      "subtitle": "Geen zorgen! Voer je e-mailadres in en we sturen je een verificatiecode om je wachtwoord opnieuw in te stellen",
+      "email": "E-mailadres",
+      "emailRequired": "Vul je e-mailadres in!",
+      "emailInvalid": "Voer een geldig e-mailadres in!",
+      "submit": "Verificatiecode verzenden",
+      "loading": "Code wordt verzonden...",
+      "backToLogin": "Terug naar inloggen",
+      "successMessage": "Resetcode succesvol verzonden! Controleer je e-mail.",
+      "errorMessage": "Voer een geldig e-mailadres in."
+    },
+    "checkOtp": {
+      "title": "Verifieer je e-mail",
+      "subtitle": "We hebben een 6-cijferige verificatiecode gestuurd naar",
+      "otpRequired": "Voer de 6-cijferige code in",
+      "otpPattern": "De code moet precies 6 cijfers bevatten",
+      "submit": "Verifiëren & doorgaan",
+      "loading": "Code wordt geverifieerd...",
+      "dontReceive": "Geen code ontvangen?",
+      "resend": "Code opnieuw verzenden",
+      "resendIn": "Opnieuw verzenden over",
+      "loadingResend": "Verzenden...",
+      "changeEmail": "E-mailadres wijzigen",
+      "successMessage": "Verificatiecode succesvol bevestigd!",
+      "resendSuccessMessage": "Een nieuwe verificatiecode is naar je e-mail gestuurd!"
+    },
+    "setPassword": {
+      "title": "Nieuw wachtwoord aanmaken",
+      "description": "Je nieuwe wachtwoord moet om veiligheidsredenen verschillen van eerder gebruikte wachtwoorden",
+      "newPassword": "Nieuw wachtwoord",
+      "passwordRequired": "Nieuw wachtwoord is verplicht.",
+      "passwordPattern": "Minimaal 8 tekens, 1 hoofdletter, 1 cijfer en 1 speciaal teken",
+      "passwordPlaceholder": "Voer je nieuwe wachtwoord in",
+      "confirmPassword": "Bevestig wachtwoord",
+      "confirmPasswordRequired": "Bevestig je wachtwoord!",
+      "passwordsDoNotMatch": "Wachtwoorden komen niet overeen!",
+      "confirmPasswordPlaceholder": "Bevestig je nieuwe wachtwoord",
+      "submit": "Wachtwoord resetten",
+      "loading": "Wachtwoord wordt gereset...",
+      "successMessage": "Wachtwoord succesvol gereset!",
+      "errorMessage": "Vul alle verplichte velden correct in.",
+      "backToLogin": "Terug naar inloggen"
+    }
+  },
+  "about": {
+    "title": "Over Ons",
+    "pText1": "Welkom bij Vloerplaat Koning, uw specialist in hoogwaardige vloerpanelen. Wij bieden een breed scala aan vloeroplossingen voor zowel residentiële als commerciële toepassingen, met de nadruk op kwaliteit, duurzaamheid en design.",
+    "pText2": "Onze missie is om de beste vloerproducten te leveren die aan de behoeften van onze klanten voldoen. Wij bieden hoogwaardige vloerpanelen die zowel esthetisch aantrekkelijk als duurzaam zijn.",
+    "h4Questions": "Waarom kiezen voor Vloerplaat Koning?",
+    "quality": "Kwaliteit",
+    "qualityText": "Alleen de beste vloeroplossingen",
+    "wide_Range": "Breed Assortiment",
+    "wide_RangeText": "Verschillende materialen en stijlen voor elk project.",
+    "customerService": "Klantenservice",
+    "customerServiceText": "Advies en ondersteuning door ons ervaren team",
+    "fast_Delivery": "Snelle Levering",
+    "fast_DeliveryText": "Efficiënte en betrouwbare levering.",
+    "footer": "Bedankt voor uw vertrouwen in Vloerplaat Koning. Wij helpen u graag bij het vinden van de perfecte vloer voor uw project!"
+  },
+  "contact": {
+    "h6Text": "Als u vragen heeft, kunt u telefonisch of per e-mail contact met ons opnemen. Wij bieden ondersteuning en advies wanneer u dat nodig heeft.",
+    "time": "Maandag - vrijdag 09:00 - 17:00",
+    "footer": "Bedankt voor uw vertrouwen in Vloerplaat Koning. Wij helpen u graag bij het vinden van de perfecte vloer voor uw project!"
+  },
+  "orders": {
+    "title": "Mijn Bestellingen",
+    "totalOrders": "Totaal Bestellingen",
+    "totalSpent": "Totaal Uitgegeven",
+    "totalArea": "Totale Oppervlakte",
+    "orderDetails": "Bestelgegevens",
+    "close": "Sluiten",
+    "orderId": "Bestel-ID",
+    "material": "Materiaal",
+    "thickness": "Dikte",
+    "color": "Kleur",
+    "drillingHoles": "Boorgaten",
+    "totalPrice": "Totale Prijs",
+    "orderDate": "Besteldatum",
+    "productItems": "Productitems",
+    "points": "Punten",
+    "drilling": "Boren",
+    "closed": "Gesloten",
+    "product": "Product",
+    "date": "Datum",
+    "actions": "Acties",
+    "area": "Oppervlakte"
+  },
+  "footer": {
+    "menu": "Menu",
+    "home": "Home",
+    "about": "Over ons",
+    "howItWorks": "Hoe het werkt",
+    "contact": "Contact",
+    "termsAndConditions": "Algemene Voorwaarden",
+    "privacyPolicies": "Privacybeleid",
+    "termsAndConditionsLink": "Algemene Voorwaarden",
+    "deliveryPolicy": "Bezorgbeleid",
+    "orderCancellationPolicy": "Annuleringsbeleid",
+    "companyData": "Bedrijfsgegevens",
+    "companyName": "Vloerplaat",
+    "phone": "0527304050",
+    "email": "customerservicekachelpand@gmail.com",
+    "address": "Kraggenburg, Nederland",
+    "contactTitle": "Contact",
+    "openingHours": "Maandag - Vrijdag 09:00 - 17:00",
+    "followUs": "Volg ons op onze sociale media"
+  },
+  "shapes": {
+    "shapeTemplateText": "Vormsjablonen",
+    "hideTemplates": "Sjablonen verbergen",
+    "showTemplates": "Vormsjablonen tonen",
+
+    "addShape": "Vorm toevoegen",
+    "editShape": "Vorm bewerken",
+    "deleteShape": "Vorm verwijderen",
+
+    "shape": {
+      "title": "Vorm"
+    },
+    "holes": {
+      "title": "Gaten",
+      "drillingHoles": "Boor gaten",
+      "warningMessage": "Minimaal 1 boorgat is vereist voor montage.",
+      "successMessage": "Minimum aantal gaten bereikt ✓",
+      "holeSpecs": "Gatspecificaties",
+      "diameter": "Diameter",
+      "fixed": "vast",
+      "placed": "Geplaatst",
+      "addDrillingHole": "Boorgat toevoegen",
+      "addingLoading": "Klik op het canvas om een gat te plaatsen...",
+      "pricingAlertTitle": "Plaatsingsmodus actief",
+      "pricingAlertDesc": "Klik binnen de vormrand om een boorgat van 6 mm te plaatsen.",
+      "placedHoles": "Geplaatste gaten",
+      "noHoles": "Nog geen gaten geplaatst",
+      "size": "Grootte",
+      "actions": "Acties",
+      "save": "Opslaan",
+      "deleteTitle": "Dit gat verwijderen?",
+      "holePositionUpdated": "Gatpositie bijgewerkt",
+      "placeHoleMessage": "Klik binnen de vorm om een boorgat te plaatsen",
+      "holeDeleted": "Gat verwijderd"
+    },
+    "material": {
+      "title": "Materiaal",
+      "mainTitle": "Materiaal & Kleur",
+      "selectMaterial": "Selecteer materiaal",
+      "selected": "geselecteerd",
+      "selectThickness": "Selecteer dikte",
+      "selectColor": "Selecteer kleur",
+      "selectFinish": "Selecteer afwerking",
+      "selectFinishPlaceholder": "Kies een afwerking",
+      "currentSelection": "Huidige selectie",
+      "thickness": "Dikte",
+      "color": "Kleur",
+      "finish": "Afwerking"
+    },
+    "review": {
+      "title": "Controleren"
+    }
+  }
+}

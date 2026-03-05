@@ -4,30 +4,9 @@ import { CheckCircleOutlined, LoadingOutlined } from "@ant-design/icons";
 
 const { Option } = Select;
 
-// Standard Colors
-const standardColors = [
-  { id: "white", name: "Arctic White", hex: "#FFFFFF" },
-  { id: "cream", name: "Cream Beige", hex: "#F5F5DC" },
-  { id: "gray", name: "Stone Gray", hex: "#808080" },
-  { id: "charcoal", name: "Charcoal", hex: "#36454F" },
-  { id: "black", name: "Absolute Black", hex: "#1a1a1a" },
-  { id: "brown", name: "Warm Brown", hex: "#8B4513" },
-  { id: "navy", name: "Navy Blue", hex: "#000080" },
-  { id: "green", name: "Forest Green", hex: "#228B22" },
-  { id: "terracotta", name: "Terracotta", hex: "#E2725B" },
-  { id: "sand", name: "Desert Sand", hex: "#EDC9AF" },
-];
-
-// Coating/Finish Options
-const finishOptions = [
-  { id: "polished", name: "Polished", description: "High gloss, reflective" },
-  { id: "matte", name: "Matte", description: "Non-reflective, modern" },
-  { id: "honed", name: "Honed", description: "Smooth, satin finish" },
-  { id: "leathered", name: "Leathered", description: "Textured, tactile" },
-  { id: "brushed", name: "Brushed", description: "Linear texture" },
-];
-
 function MaterialSelector({
+  lang,
+  materialText,
   selectedMaterial,
   setSelectedMaterial,
   selectedThickness,
@@ -39,6 +18,64 @@ function MaterialSelector({
   materialList,
   isMaterialLoading,
 }) {
+  const isEn = lang === "en";
+
+  // Standard Colors
+  const standardColors = [
+    {
+      id: "white",
+      name: isEn ? "Arctic White" : "Arctisch Wit",
+      hex: "#FFFFFF",
+    },
+    { id: "cream", name: isEn ? "Cream Beige" : "Crème Beige", hex: "#F5F5DC" },
+    { id: "gray", name: isEn ? "Stone Gray" : "Steengrijs", hex: "#808080" },
+    { id: "charcoal", name: isEn ? "Charcoal" : "Houtskool", hex: "#36454F" },
+    {
+      id: "black",
+      name: isEn ? "Absolute Black" : "Absoluut Zwart",
+      hex: "#1a1a1a",
+    },
+    { id: "brown", name: isEn ? "Warm Brown" : "Warm Bruin", hex: "#8B4513" },
+    { id: "navy", name: isEn ? "Navy Blue" : "Marineblauw", hex: "#000080" },
+    { id: "green", name: isEn ? "Forest Green" : "Bosgroen", hex: "#228B22" },
+    {
+      id: "terracotta",
+      name: isEn ? "Terracotta" : "Terracotta",
+      hex: "#E2725B",
+    },
+    { id: "sand", name: isEn ? "Desert Sand" : "Woestijnzand", hex: "#EDC9AF" },
+  ];
+
+  // Coating/Finish Options
+  const finishOptions = [
+    {
+      id: "polished",
+      name: isEn ? "Polished" : "Gepolijst",
+      description: isEn ? "High gloss, reflective" : "Hoogglans, reflecterend",
+    },
+    {
+      id: "matte",
+      name: isEn ? "Matte" : "Mat",
+      description: isEn
+        ? "Non-reflective, modern"
+        : "Niet-reflecterend, modern",
+    },
+    {
+      id: "honed",
+      name: isEn ? "Honed" : "Gezoet",
+      description: isEn ? "Smooth, satin finish" : "Glad, satijnen afwerking",
+    },
+    {
+      id: "leathered",
+      name: isEn ? "Leathered" : "Leerstructuur",
+      description: isEn ? "Textured, tactile" : "Getextureerd, voelbaar",
+    },
+    {
+      id: "brushed",
+      name: isEn ? "Brushed" : "Geborsteld",
+      description: isEn ? "Linear texture" : "Lineaire textuur",
+    },
+  ];
   // Get variants for selected material
   const selectedMaterialData = materialList?.find(
     (m) => m.id === selectedMaterial,
@@ -56,11 +93,17 @@ function MaterialSelector({
   }
 
   return (
-    <Card title="🎨 Material & Color" size="small" className="shadow-md">
+    <Card
+      title={`🎨 ${materialText?.mainTitle}`}
+      size="small"
+      className="shadow-md"
+    >
       <Space orientation="vertical" className="w-full" size="middle">
         {/* Material Selection */}
         <div>
-          <div className="text-sm font-medium mb-2">Select Material</div>
+          <div className="text-sm font-medium mb-2">
+            {materialText?.selectMaterial}
+          </div>
           <div className="grid grid-cols-3 gap-2">
             {materialList?.map((material) => (
               <Button
@@ -96,7 +139,7 @@ function MaterialSelector({
             <div className="mt-2 text-xs text-green-600 flex items-center gap-1">
               <CheckCircleOutlined />
               {materialList?.find((m) => m.id === selectedMaterial)?.name}{" "}
-              selected
+              {materialText?.selected}
             </div>
           )}
         </div>
@@ -105,7 +148,9 @@ function MaterialSelector({
         {selectedMaterial && availableVariants.length > 0 && (
           <div>
             <Divider style={{ margin: "8px 0" }} />
-            <div className="text-sm font-medium mb-2">Select Thickness</div>
+            <div className="text-sm font-medium mb-2">
+              {materialText?.selectThickness}
+            </div>
             <Radio.Group
               value={selectedThickness}
               onChange={(e) => setSelectedThickness(e.target.value)}
@@ -138,7 +183,9 @@ function MaterialSelector({
 
         {/* Color Selection */}
         <div>
-          <div className="text-sm font-medium mb-2">Select Color</div>
+          <div className="text-sm font-medium mb-2">
+            {materialText?.selectColor}
+          </div>
           <div className="grid grid-cols-5 gap-2 mb-3">
             {standardColors.map((color) => (
               <div
@@ -171,11 +218,13 @@ function MaterialSelector({
 
         {/* Finish Selection */}
         <div>
-          <div className="text-sm font-medium mb-2">Select Finish</div>
+          <div className="text-sm font-medium mb-2">
+            {materialText?.selectFinish}
+          </div>
           <Select
             value={selectedFinish}
             onChange={setSelectedFinish}
-            placeholder="Choose a finish"
+            placeholder={materialText?.selectFinishPlaceholder}
             style={{ width: "100%" }}
           >
             {finishOptions.map((finish) => (
@@ -197,12 +246,12 @@ function MaterialSelector({
             <Divider style={{ margin: "8px 0" }} />
             <div className="bg-green-50 p-3 rounded-lg">
               <div className="text-sm font-medium text-green-700 mb-2">
-                Current Selection
+                {materialText?.currentSelection}
               </div>
               <div className="space-y-1 text-sm">
                 {selectedMaterial && (
                   <div>
-                    Material:{" "}
+                    {materialText?.title}:{" "}
                     <strong>
                       {
                         materialList?.find((m) => m.id === selectedMaterial)
@@ -213,7 +262,7 @@ function MaterialSelector({
                 )}
                 {selectedThickness && (
                   <div>
-                    Thickness:{" "}
+                    {materialText?.thickness}:{" "}
                     <strong>
                       {
                         availableVariants.find(
@@ -225,7 +274,7 @@ function MaterialSelector({
                 )}
                 {selectedColor && (
                   <div className="flex items-center gap-2">
-                    Color:
+                    {materialText?.color}:
                     <div
                       className="w-4 h-4 rounded border"
                       style={{
@@ -241,7 +290,7 @@ function MaterialSelector({
                 )}
                 {selectedFinish && (
                   <div>
-                    Finish:{" "}
+                    {materialText?.finish}:{" "}
                     <strong>
                       {finishOptions.find((f) => f.id === selectedFinish)?.name}
                     </strong>

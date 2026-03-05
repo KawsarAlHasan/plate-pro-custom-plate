@@ -12,7 +12,7 @@ import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import { useAuthModal } from "../../contex/AuthModalContext";
 
-export default function FeaturedShapeAndSize() {
+export default function FeaturedShapeAndSize({ shapeAndSizeText }) {
   const { shapeList, isLoading, isError, mutate } = useShapeList();
   const { openAuthModal } = useAuthModal();
 
@@ -32,7 +32,7 @@ export default function FeaturedShapeAndSize() {
     <>
       <div className="swipper_slider_wrapper w-full flex justify-center py-12">
         <div className="swipper_slider w-full max-w-[1712px]">
-          <h4 className="text-2xl font-bold mb-4">Featured Shape and size</h4>
+          <h4 className="text-2xl font-bold mb-4">{shapeAndSizeText?.title}</h4>
           <Swiper
             onSwiper={setSwiperRef}
             loop={true}
@@ -76,7 +76,7 @@ export default function FeaturedShapeAndSize() {
                     onClick={() => handleStart(item?.id)}
                     className="w-full! text-lg! py-5! border-0! bg-black! text-white!"
                   >
-                    Get started
+                    {shapeAndSizeText?.buttonText}
                   </Button>
                 </div>
               </SwiperSlide>

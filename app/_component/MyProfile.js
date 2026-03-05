@@ -9,7 +9,7 @@ import {
 import { useState } from "react";
 import { fetcherWithTokenPut } from "../api/api";
 
-function MyProfile({ profileData, mutate, isMobile }) {
+function MyProfile({ profileData, mutate, isMobile, navigation }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
@@ -63,7 +63,7 @@ function MyProfile({ profileData, mutate, isMobile }) {
 
       await fetcherWithTokenPut("/api/auth/users/update/", formData);
 
-      message.success("Profile updated successfully!");
+      message.success(navigation.successMessage);
 
       // Refresh data
       if (mutate) {
@@ -74,8 +74,8 @@ function MyProfile({ profileData, mutate, isMobile }) {
       form.resetFields();
       setImageFile(null);
     } catch (error) {
-      message.error( error.response.data.message || "Failed to update profile!");
       console.error("Update error:", error.response.data);
+      message.error(error.response.data.message || "Failed to update profile!");
     } finally {
       setLoading(false);
     }
@@ -88,21 +88,21 @@ function MyProfile({ profileData, mutate, isMobile }) {
           className="text-blue-600 hover:text-blue-400 hover:bg-gray-50 font-medium px-4 py-3 rounded-lg transition-colors duration-200 flex items-center gap-2 cursor-pointer"
           onClick={showModal}
         >
-          <UserOutlined /> My Profile
+          <UserOutlined /> {navigation.myProfile}
         </div>
       ) : (
         <div
           onClick={showModal}
           className="flex items-center gap-2 cursor-pointer"
         >
-          <UserOutlined /> My Profile
+          <UserOutlined /> {navigation.myProfile}
         </div>
       )}
 
       <Modal
         title={
           <div className="text-xl font-semibold text-gray-800 pb-2">
-            My Profile
+            {navigation.myProfile}
           </div>
         }
         open={isModalOpen}
@@ -138,12 +138,12 @@ function MyProfile({ profileData, mutate, isMobile }) {
               </Upload>
             </div>
             <p className="text-sm text-gray-500 mt-3">
-              Click to change profile picture
+              {navigation.clickChange}
             </p>
           </div>
 
           {/* Email (Read-only) */}
-          <Form.Item label="Email Address">
+          <Form.Item label={navigation.emailAddress}>
             <Input
               prefix={<MailOutlined className="text-gray-400" />}
               value={profileData?.email}
@@ -154,34 +154,31 @@ function MyProfile({ profileData, mutate, isMobile }) {
 
           {/* Full Name */}
           <Form.Item
-            label="Full Name"
+            label={navigation.fullName}
             name="full_name"
-            rules={[
-              { required: true, message: "Please enter your name!" },
-              { min: 2, message: "Name must be at least 2 characters!" },
-            ]}
+            rules={[{ required: true, message: navigation.fullNameRequired }]}
           >
             <Input
               prefix={<UserOutlined className="text-gray-400" />}
-              placeholder="Enter your full name"
+              placeholder={navigation.fullNamePlaceholder}
               size="large"
             />
           </Form.Item>
 
           {/* Phone Number */}
           <Form.Item
-            label="Phone Number"
+            label={navigation.phoneNumber}
             name="phone_number"
             rules={[
               {
                 pattern: /^[0-9+\-\s()]*$/,
-                message: "Please enter a valid phone number!",
+                message: navigation.phoneValid,
               },
             ]}
           >
             <Input
               prefix={<PhoneOutlined className="text-gray-400" />}
-              placeholder="Enter your phone number"
+              placeholder={navigation.phonePlaseholder}
               size="large"
             />
           </Form.Item>
@@ -193,14 +190,14 @@ function MyProfile({ profileData, mutate, isMobile }) {
               onClick={handleCancel}
               className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
             >
-              Cancel
+              {navigation.cancelButton}
             </button>
             <button
               type="submit"
               disabled={loading}
               className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
-              {loading ? "Saving..." : "Save Changes"}
+              {loading ? navigation.saving : navigation.saveButton}
             </button>
           </div>
         </Form>

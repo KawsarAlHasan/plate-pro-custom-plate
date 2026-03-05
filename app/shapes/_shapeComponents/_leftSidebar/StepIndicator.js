@@ -3,6 +3,7 @@ import { CheckCircleOutlined } from "@ant-design/icons";
 import { Card } from "antd";
 
 function StepIndicator({
+  shapesText,
   currentStep,
   setCurrentStep,
   shapes,
@@ -64,10 +65,10 @@ function StepIndicator({
                     : "text-gray-600"
                 }`}
               >
-                {step === 1 && "Shape"}
-                {step === 2 && "Holes"}
-                {step === 3 && "Material"}
-                {step === 4 && "Review"}
+                {step === 1 && shapesText?.shape?.title}
+                {step === 2 && shapesText?.holes?.title}
+                {step === 3 && shapesText?.material?.title}
+                {step === 4 && shapesText?.review?.title}
               </span>
             </div>
           ))}

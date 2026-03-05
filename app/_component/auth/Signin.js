@@ -8,7 +8,7 @@ import { API } from "../../api/api";
 import Cookies from "js-cookie";
 import { useAuthModal } from "../../contex/AuthModalContext";
 
-function Signin() {
+function Signin({ signinText }) {
   const [form] = Form.useForm();
 
   const router = useRouter();
@@ -27,7 +27,7 @@ function Signin() {
       const res = await API.post("/api/auth/login/", payload);
 
       if (res.status === 200) {
-        message.success("Login successful!");
+        message.success(signinText?.successMessage);
         Cookies.set("token", res?.data?.access);
         closeAuthModal();
         router.push("/");
@@ -44,18 +44,16 @@ function Signin() {
 
   const onFinishFailed = (errorInfo) => {
     console.log("Form Validation Failed:", errorInfo);
-    message.error("Please check the form fields and try again.");
+    message.error(signinText?.errorMessage);
   };
 
   return (
     <div className="w-full max-w-[520px] bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
       <div className="px-4 lg:px-8 py-6 lg:py-10">
         <h1 className="text-3xl font-bold text-gray-800 text-center mb-2">
-          Welcome Back
+          {signinText?.title}
         </h1>
-        <p className="text-gray-500 text-center mb-8">
-          Please enter your credentials to continue
-        </p>
+        <p className="text-gray-500 text-center mb-8">{signinText?.subtitle}</p>
 
         <Form
           form={form}
@@ -67,12 +65,14 @@ function Signin() {
           {/* Email Field */}
           <Form.Item
             label={
-              <span className="text-gray-700 font-medium">Email Address</span>
+              <span className="text-gray-700 font-medium">
+                {signinText?.email}
+              </span>
             }
             name="email"
             rules={[
-              { required: true, message: "Please input your email!" },
-              { type: "email", message: "Please enter a valid email!" },
+              { required: true, message: signinText?.emailRequired },
+              { type: "email", message: signinText?.emailInvalid },
             ]}
           >
             <Input
@@ -85,13 +85,17 @@ function Signin() {
 
           {/* Password Field */}
           <Form.Item
-            label={<span className="text-gray-700 font-medium">Password</span>}
+            label={
+              <span className="text-gray-700 font-medium">
+                {signinText?.password}
+              </span>
+            }
             name="password"
-            rules={[{ required: true, message: "Please input your password!" }]}
+            rules={[{ required: true, message: signinText?.passwordRequired }]}
           >
             <Input.Password
               prefix={<LockOutlined className="text-gray-400" />}
-              placeholder="Enter your password"
+              placeholder={signinText?.passwordPlaceholder}
               className="rounded-lg border-gray-300 hover:border-red-500 focus:border-red-500"
               size="large"
             />
@@ -100,13 +104,15 @@ function Signin() {
           {/* Remember Me & Forgot Password */}
           <div className="flex justify-between items-center mb-6">
             <Form.Item name="remember" valuePropName="checked" noStyle>
-              <Checkbox className="text-gray-600">Remember me</Checkbox>
+              <Checkbox className="text-gray-600">
+                {signinText?.rememberMe}
+              </Checkbox>
             </Form.Item>
             <Link
               href="/auth/forgotpassword"
               className="text-red-600 hover:text-red-700 font-medium transition-colors"
             >
-              Forgot password?
+              {signinText?.forgotPassword}
             </Link>
           </div>
 
@@ -119,7 +125,7 @@ function Signin() {
               size="large"
               className="w-full h-12 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 border-0 rounded-lg font-semibold text-base shadow-lg hover:shadow-xl transition-all duration-300"
             >
-              Sign In
+              {signinText?.submit}
             </Button>
           </Form.Item>
         </Form>
@@ -127,12 +133,12 @@ function Signin() {
         {/* Sign Up Link */}
         <div className="text-center mt-6">
           <p className="text-gray-600">
-            Don't have an account?{" "}
+            {signinText?.noAccount}?{" "}
             <Link
               href="/auth/signup"
               className="text-red-600 hover:text-red-700 font-semibold transition-colors"
             >
-              Sign up here
+              {signinText?.signUpHere}
             </Link>
           </p>
         </div>

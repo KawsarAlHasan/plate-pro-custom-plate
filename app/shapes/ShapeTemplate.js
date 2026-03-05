@@ -1,11 +1,17 @@
 import { useRouter } from "next/navigation";
 
-function ShapeTemplate({ shapeList, isLoading, isError, mutate }) {
+function ShapeTemplate({
+  shapeList,
+  isLoading,
+  isError,
+  mutate,
+  shapeTemplateText,
+}) {
   const router = useRouter();
 
   return (
     <div className="p-4">
-      <h2 className="text-center mb-4 font-bold">Shape Templates</h2>
+      <h2 className="text-center mb-4 font-bold">{shapeTemplateText}</h2>
       <div className="text-center overflow-scroll h-screen p-4">
         {shapeList?.map((template) => (
           <div

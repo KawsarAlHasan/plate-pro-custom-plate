@@ -17,13 +17,14 @@ const PRICING_CONFIG = {
     terracotta: 1.0,
     sand: 1.0,
   },
-  complexShapeMultiplier: 1.0, // For shapes with more than 6 points
-  radiusCornerCost: 5, // Per rounded corner
-  drillingHoleCost: 1.5, // Per hole
+  complexShapeMultiplier: 1.0,
+  radiusCornerCost: 5,
+  drillingHoleCost: 1.5,
   minimumOrderPrice: 5,
 };
 
 function PricingPanel({
+  lang,
   totalArea,
   drillingHoles,
   totalPerimeter,
@@ -34,87 +35,96 @@ function PricingPanel({
   shapes,
   materialList,
 }) {
+  const isEn = lang === "en";
+
   // Calculate pricing
   const pricing = useMemo(() => {
     let breakdown = [];
     let subtotal = 0;
 
-    // Get material and thickness data
     const materialData = materialList?.find((m) => m.id === selectedMaterial);
     const thicknessData = materialData?.variants?.find(
       (v) => v.id === selectedThickness,
     );
 
-    // Base price per sq m from thickness/variant
     const basePrice = parseFloat(thicknessData?.price || 0) * 10;
 
     const areaPrice = basePrice * totalArea;
 
     if (areaPrice > 0) {
       breakdown.push({
-        item: `Base Material (${materialData?.name || "Not selected"})`,
-        calculation: `${totalArea.toFixed(2)} sq m × €${basePrice}/sq m`,
+        item: isEn
+          ? `Base Material (${materialData?.name || "Not selected"})`
+          : `Basismateriaal (${materialData?.name || "Niet geselecteerd"})`,
+        calculation: `${totalArea.toFixed(2)} ${isEn ? "sq m" : "m²"} × €${basePrice}/${isEn ? "sq m" : "m²"}`,
         amount: areaPrice,
       });
       subtotal += areaPrice;
     }
 
-    // Thickness info (already included in base price)
     if (selectedThickness && thicknessData) {
       breakdown.push({
-        item: `Thickness (${thicknessData.name})`,
-        calculation: `Included in base price`,
+        item: isEn
+          ? `Thickness (${thicknessData.name})`
+          : `Dikte (${thicknessData.name})`,
+        calculation: isEn
+          ? `Included in base price`
+          : `Inbegrepen in basisprijs`,
         amount: 0,
       });
     }
 
-    // Color multiplier
     const colorMultiplier = PRICING_CONFIG.colorMultipliers[selectedColor] || 1;
     if (selectedColor && colorMultiplier !== 1) {
       const colorAdjustment = subtotal * (colorMultiplier - 1);
       breakdown.push({
-        item: `Color Premium (${selectedColor})`,
-        calculation: `${((colorMultiplier - 1) * 100).toFixed(0)}% premium`,
+        item: isEn
+          ? `Color Premium (${selectedColor})`
+          : `Kleurtoeslag (${selectedColor})`,
+        calculation: `${((colorMultiplier - 1) * 100).toFixed(0)}% ${
+          isEn ? "premium" : "toeslag"
+        }`,
         amount: colorAdjustment,
       });
       subtotal += colorAdjustment;
     }
 
-    // Complex shape multiplier
     const pointCount = shapes[0]?.points?.length || 0;
     if (pointCount > 6) {
       const complexityCharge =
         subtotal * (PRICING_CONFIG.complexShapeMultiplier - 1);
       breakdown.push({
-        item: "Complex Shape",
-        calculation: `${pointCount} vertices (20% surcharge)`,
+        item: isEn ? "Complex Shape" : "Complexe Vorm",
+        calculation: `${pointCount} ${
+          isEn ? "vertices (20% surcharge)" : "hoekpunten (20% toeslag)"
+        }`,
         amount: complexityCharge,
       });
       subtotal += complexityCharge;
     }
 
-    // Drilling holes
     const drillingCost = drillingHoles.length * PRICING_CONFIG.drillingHoleCost;
     if (drillingHoles.length > 0) {
       breakdown.push({
-        item: "Drilling Holes",
-        calculation: `${drillingHoles.length} holes × €${PRICING_CONFIG.drillingHoleCost}`,
+        item: isEn ? "Drilling Holes" : "Boor Gaten",
+        calculation: `${drillingHoles.length} ${
+          isEn ? "holes" : "gaten"
+        } × €${PRICING_CONFIG.drillingHoleCost}`,
         amount: drillingCost,
       });
       subtotal += drillingCost;
     }
 
-    // Finish premium (optional - you can add pricing for finishes)
     if (selectedFinish) {
-      // For now, finishes are free, but you can add pricing logic here
       breakdown.push({
-        item: `Finish (${selectedFinish})`,
-        calculation: `Included`,
+        item: isEn
+          ? `Finish (${selectedFinish})`
+          : `Afwerking (${selectedFinish})`,
+        calculation: isEn ? `Included` : `Inbegrepen`,
         amount: 0,
       });
     }
 
-    // Apply minimum order price
     const finalTotal = Math.max(subtotal, PRICING_CONFIG.minimumOrderPrice);
     const minimumApplied = subtotal < PRICING_CONFIG.minimumOrderPrice;
 
@@ -135,7 +145,6 @@ function PricingPanel({
     materialList,
   ]);
 
-  // Get display names
   const materialData = materialList?.find((m) => m.id === selectedMaterial);
   const thicknessData = materialData?.variants?.find(
     (v) => v.id === selectedThickness,
@@ -146,32 +155,29 @@ function PricingPanel({
       title={
         <div className="flex items-center gap-2">
           <CalculatorOutlined />
-          <span>Pricing Estimate</span>
+          <span>{isEn ? "Pricing Estimate" : "Prijs Schatting"}</span>
         </div>
       }
       size="small"
       className="shadow-md"
     >
       <Space orientation="vertical" className="w-full" size="small">
-        {/* Area & Perimeter Summary */}
+        {/* Area Summary */}
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-blue-50 p-3 rounded-lg text-center">
-            <div className="text-xs text-blue-600">Total Area</div>
+            <div className="text-xs text-blue-600">
+              {isEn ? "Total Area" : "Totale Oppervlakte"}
+            </div>
             <div className="text-xl font-bold text-blue-700">
               {totalArea.toFixed(2)}
             </div>
-            <div className="text-xs text-blue-500">sq m</div>
+            <div className="text-xs text-blue-500">{isEn ? "sq m" : "m²"}</div>
           </div>
-          {/* <div className="bg-green-50 p-3 rounded-lg text-center">
-            <div className="text-xs text-green-600">Perimeter</div>
-            <div className="text-xl font-bold text-green-700">
-              {totalPerimeter.toFixed(2)}
-            </div>
-            <div className="text-xs text-green-500">ft</div>
-          </div> */}
         </div>
 
-        <Divider style={{ margin: "12px 0" }}>Price Breakdown</Divider>
+        <Divider style={{ margin: "12px 0" }}>
+          {isEn ? "Price Breakdown" : "Prijs Specificatie"}
+        </Divider>
 
         {/* Price Breakdown */}
         <div className="space-y-2">
@@ -194,7 +200,9 @@ function PricingPanel({
         {/* Subtotal */}
         <div className="bg-gray-50 p-3 rounded-lg">
           <div className="flex justify-between items-center">
-            <span className="text-gray-600">Subtotal</span>
+            <span className="text-gray-600">
+              {isEn ? "Subtotal" : "Subtotaal"}
+            </span>
             <span className="font-medium">€{pricing.subtotal.toFixed(2)}</span>
           </div>
         </div>
@@ -203,7 +211,11 @@ function PricingPanel({
         {pricing.minimumApplied && (
           <Alert
             type="info"
-            title={`Minimum order price of €${PRICING_CONFIG.minimumOrderPrice} applied`}
+            title={
+              isEn
+                ? `Minimum order price of €${PRICING_CONFIG.minimumOrderPrice} applied`
+                : `Minimale bestelprijs van €${PRICING_CONFIG.minimumOrderPrice} toegepast`
+            }
             showIcon
           />
         )}
@@ -212,8 +224,12 @@ function PricingPanel({
         <div className="bg-gradient-to-r from-green-500 to-emerald-600 p-4 rounded-lg text-white">
           <div className="flex justify-between items-center">
             <div>
-              <div className="text-sm opacity-90">Estimated Total</div>
-              <div className="text-xs opacity-75">VAT not included</div>
+              <div className="text-sm opacity-90">
+                {isEn ? "Estimated Total" : "Geschat Totaal"}
+              </div>
+              <div className="text-xs opacity-75">
+                {isEn ? "VAT not included" : "BTW niet inbegrepen"}
+              </div>
             </div>
             <div className="text-3xl font-bold">
               €{pricing.finalTotal.toFixed(2)}
@@ -224,21 +240,38 @@ function PricingPanel({
         {/* Price Disclaimer */}
         <Alert
           type="warning"
-          title="Pricing Note"
+          title={isEn ? "Pricing Note" : "Prijs Opmerking"}
           description={
             <div className="text-xs">
               <p>
-                This is an <strong>estimated price</strong>. Final pricing may
-                vary based on:
+                {isEn ? "This is an " : "Dit is een "}
+                <strong>{isEn ? "estimated price" : "geschatte prijs"}</strong>.
+                {isEn
+                  ? " Final pricing may vary based on:"
+                  : " De uiteindelijke prijs kan variëren op basis van:"}
               </p>
               <ul className="list-disc ml-4 mt-1">
-                <li>Exact material availability</li>
-                <li>Shape complexity verification</li>
-                <li>Special color matching</li>
-                <li>Current market rates</li>
+                <li>
+                  {isEn
+                    ? "Exact material availability"
+                    : "Exacte beschikbaarheid van materiaal"}
+                </li>
+                <li>
+                  {isEn
+                    ? "Shape complexity verification"
+                    : "Controle van vormcomplexiteit"}
+                </li>
+                <li>
+                  {isEn ? "Special color matching" : "Speciale kleurafstemming"}
+                </li>
+                <li>
+                  {isEn ? "Current market rates" : "Huidige marktprijzen"}
+                </li>
               </ul>
               <p className="mt-1">
-                You will receive a confirmed quote after order review.
+                {isEn
+                  ? "You will receive a confirmed quote after order review."
+                  : "Je ontvangt een definitieve offerte na beoordeling van de bestelling."}
               </p>
             </div>
           }

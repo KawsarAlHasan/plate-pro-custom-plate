@@ -3,7 +3,7 @@ import { Modal } from "antd";
 import Signin from "./Signin";
 import { useAuthModal } from "../../contex/AuthModalContext";
 
-const AuthModal = () => {
+const AuthModal = ({ dict }) => {
   const { isAuthModalOpen, closeAuthModal } = useAuthModal();
 
   return (
@@ -14,7 +14,7 @@ const AuthModal = () => {
       onCancel={closeAuthModal}
     >
       <div className="-m-5">
-        <Signin />
+        <Signin signinText={dict.auth.signin} />
       </div>
     </Modal>
   );
