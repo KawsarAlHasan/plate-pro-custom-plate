@@ -7,6 +7,7 @@ import {
 } from "@ant-design/icons";
 
 function OrderConfirmation({
+  lang,
   showValidationModal,
   setShowValidationModal,
   totalArea,
@@ -20,6 +21,42 @@ function OrderConfirmation({
   handleSubmitOrder,
   validationErrors,
 }) {
+  const isEn = lang === "en";
+
+  const t = {
+    validationFailed: isEn
+      ? "Order Validation Failed"
+      : "Ordervalidatie mislukt",
+    reviewOrder: isEn ? "Review Your Order" : "Controleer uw bestelling",
+    cancel: isEn ? "Cancel" : "Annuleren",
+    fixErrors: isEn ? "Fix Errors First" : "Los eerst fouten op",
+    confirmOrder: isEn ? "Confirm Order" : "Bestelling bevestigen",
+    fixFollowing: isEn
+      ? "Please fix the following errors:"
+      : "Los de volgende fouten op:",
+    orderSummary: isEn ? "Order Summary" : "Besteloverzicht",
+    totalArea: isEn ? "Total Area:" : "Totaal oppervlak:",
+    // totalPerimeter: isEn ? "Total Perimeter:" : "Totale omtrek:",
+    drillingHoles: isEn ? "Drilling Holes:" : "Boorgaten:",
+    materialSelection: isEn ? "Material Selection" : "Materiaalselectie",
+    material: isEn ? "Material:" : "Materiaal:",
+    thickness: isEn ? "Thickness:" : "Dikte:",
+    color: isEn ? "Color:" : "Kleur:",
+    finish: isEn ? "Finish:" : "Afwerking:",
+    notSelected: isEn ? "Not selected" : "Niet geselecteerd",
+    estimatedTotal: isEn ? "Estimated Total" : "Geschat totaal",
+    vatNotIncluded: isEn ? "(VAT not included)" : "(BTW niet inbegrepen)",
+    importantNotes: isEn ? "Important Notes" : "Belangrijke opmerkingen",
+    note1: isEn ? "This is an estimated price" : "Dit is een geschatte prijs",
+    note2: isEn
+      ? "Final price will be confirmed after review"
+      : "De definitieve prijs wordt bevestigd na beoordeling",
+    note3: isEn ? "Production time: 3-4 weeks" : "Productietijd: 3-4 weken",
+    note4: isEn
+      ? "All measurements are in feet unless specified"
+      : "Alle afmetingen zijn in voet tenzij anders aangegeven",
+  };
+
   // Get material and thickness data
   const materialData = materialList?.find((m) => m.id === selectedMaterial);
   const thicknessData = materialData?.variants?.find(
@@ -39,12 +76,12 @@ function OrderConfirmation({
           {hasErrors ? (
             <>
               <WarningOutlined className="text-red-500" />
-              <span>Order Validation Failed</span>
+              <span>{t.validationFailed}</span>
             </>
           ) : (
             <>
               <CheckCircleOutlined className="text-green-500" />
-              <span>Review Your Order</span>
+              <span>{t.reviewOrder}</span>
             </>
           )}
         </div>
@@ -54,7 +91,7 @@ function OrderConfirmation({
       width={600}
       footer={[
         <Button key="cancel" onClick={() => setShowValidationModal(false)}>
-          Cancel
+          {t.cancel}
         </Button>,
         <Button
           key="submit"
@@ -62,7 +99,7 @@ function OrderConfirmation({
           onClick={handleSubmitOrder}
           disabled={hasErrors}
         >
-          {hasErrors ? "Fix Errors First" : "Confirm Order"}
+          {hasErrors ? t.fixErrors : t.confirmOrder}
         </Button>,
       ]}
     >
@@ -71,7 +108,7 @@ function OrderConfirmation({
         {hasErrors && (
           <Alert
             type="error"
-            message="Please fix the following errors:"
+            message={t.fixFollowing}
             description={
               <ul className="list-disc ml-4 mt-2">
                 {validationErrors.map((error, idx) => (
@@ -89,11 +126,11 @@ function OrderConfirmation({
             {/* Order Summary */}
             <div className="bg-blue-50 p-4 rounded-lg">
               <div className="text-sm font-medium text-blue-700 mb-3">
-                Order Summary
+                {t.orderSummary}
               </div>
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Total Area:</span>
+                  <span className="text-gray-600">{t.totalArea}</span>
                   <span className="font-medium">
                     {totalArea.toFixed(2)} sq m
                   </span>
@@ -105,7 +142,7 @@ function OrderConfirmation({
                   </span>
                 </div> */}
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Drilling Holes:</span>
+                  <span className="text-gray-600">{t.drillingHoles}</span>
                   <span className="font-medium">{drillingHoles.length}</span>
                 </div>
               </div>
@@ -115,25 +152,27 @@ function OrderConfirmation({
 
             {/* Material Selection */}
             <div>
-              <div className="text-sm font-medium mb-2">Material Selection</div>
+              <div className="text-sm font-medium mb-2">
+                {t.materialSelection}
+              </div>
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <span className="text-gray-600">Material:</span>
-                  <Tag color="blue">{materialData?.name || "Not selected"}</Tag>
+                  <span className="text-gray-600">{t.material}</span>
+                  <Tag color="blue">{materialData?.name || t.notSelected}</Tag>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-gray-600">Thickness:</span>
+                  <span className="text-gray-600">{t.thickness}</span>
                   <Tag color="green">
-                    {thicknessData?.name || "Not selected"}
+                    {thicknessData?.name || t.notSelected}
                   </Tag>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-gray-600">Color:</span>
-                  <Tag color="purple">{selectedColor || "Not selected"}</Tag>
+                  <span className="text-gray-600">{t.color}</span>
+                  <Tag color="purple">{selectedColor || t.notSelected}</Tag>
                 </div>
                 {selectedFinish && (
                   <div className="flex items-center gap-2">
-                    <span className="text-gray-600">Finish:</span>
+                    <span className="text-gray-600">{t.finish}</span>
                     <Tag color="orange">{selectedFinish}</Tag>
                   </div>
                 )}
@@ -146,8 +185,8 @@ function OrderConfirmation({
             <div className="bg-gradient-to-r from-green-500 to-emerald-600 p-4 rounded-lg text-white">
               <div className="flex justify-between items-center">
                 <div>
-                  <div className="text-sm opacity-90">Estimated Total</div>
-                  <div className="text-xs opacity-75">(VAT not included)</div>
+                  <div className="text-sm opacity-90">{t.estimatedTotal}</div>
+                  <div className="text-xs opacity-75">{t.vatNotIncluded}</div>
                 </div>
                 <div className="text-3xl font-bold">
                   €{estimatedPrice.toFixed(2)}
@@ -158,13 +197,13 @@ function OrderConfirmation({
             {/* Important Notes */}
             <Alert
               type="info"
-              message="Important Notes"
+              message={t.importantNotes}
               description={
                 <ul className="list-disc ml-4 text-xs">
-                  <li>This is an estimated price</li>
-                  <li>Final price will be confirmed after review</li>
-                  <li>Production time: 3-4 weeks</li>
-                  <li>All measurements are in feet unless specified</li>
+                  <li>{t.note1}</li>
+                  <li>{t.note2}</li>
+                  <li>{t.note3}</li>
+                  <li>{t.note4}</li>
                 </ul>
               }
               showIcon

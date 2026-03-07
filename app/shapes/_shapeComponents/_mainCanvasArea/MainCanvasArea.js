@@ -5,6 +5,7 @@ import MainToolbar from "./MainToolbar";
 import StatusBar from "./StatusBar";
 
 function MainCanvasArea({
+  lang,
   setShapes,
   setHistoryIndex,
   historyIndex,
@@ -51,6 +52,15 @@ function MainCanvasArea({
   drillingHoles,
   unit,
 }) {
+  const isEn = lang === "en";
+
+  const t = {
+    dragToRound: isEn ? "Drag to Round" : "Sleep om af te ronden",
+    placingHole: isEn
+      ? "🎯 Click inside shape to place drilling hole"
+      : "🎯 Klik binnen de vorm om een boorgat te plaatsen",
+  };
+
   // Render preview arc
   const renderPreviewArc = () => {
     if (!previewArc || previewArc.points.length < 2) return null;
@@ -135,7 +145,7 @@ function MainCanvasArea({
         <Text
           x={midpoint.x + 15 / scale}
           y={midpoint.y - 10 / scale}
-          text="Drag to Round"
+          text={t?.dragToRound}
           fontSize={12 / scale}
           fill="#52c41a"
           fontStyle="bold"
@@ -238,6 +248,7 @@ function MainCanvasArea({
     <div>
       <Card className="shadow-lg">
         <MainToolbar
+          lang={lang}
           setShapes={setShapes}
           setHistoryIndex={setHistoryIndex}
           historyIndex={historyIndex}
@@ -524,7 +535,7 @@ function MainCanvasArea({
                 <Text
                   x={stageSize.width / scale / 2 - 100}
                   y={20}
-                  text="🎯 Click inside shape to place drilling hole"
+                  text={t?.placingHole}
                   fontSize={16 / scale}
                   fill="#ff4d4f"
                   fontStyle="bold"
@@ -536,6 +547,7 @@ function MainCanvasArea({
         </div>
 
         <StatusBar
+          lang={lang}
           shapes={shapes}
           selectedShape={selectedShape}
           selectedPoint={selectedPoint}

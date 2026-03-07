@@ -37,6 +37,65 @@ const PRICING_CONFIG = {
 };
 
 const DxfEditor = ({ lang, shapesText }) => {
+  const isEn = lang === "en";
+
+  const txt = {
+    pointsFromSameShape: isEn
+      ? "Please select points from the same shape"
+      : "Selecteer punten van dezelfde vorm",
+    selectAdjacentPoints: isEn
+      ? "Please select two adjacent points"
+      : "Selecteer twee aangrenzende punten",
+    dragMidpoint: isEn
+      ? "Drag the midpoint to create a round"
+      : "Sleep het middelpunt om een afronding te maken",
+    roundApplied: isEn
+      ? "Round applied successfully!"
+      : "Afronding succesvol toegepast!",
+    noShapesToSquare: isEn
+      ? "No shapes to square"
+      : "Geen vormen om te vierkanten",
+    shapeSquared: isEn
+      ? "Shape squared to 90° corners"
+      : "Vorm omgezet naar 90° hoeken",
+    newPointAdded: isEn ? "New point added" : "Nieuw punt toegevoegd",
+    minPointsRequired: isEn
+      ? "Cannot delete point - minimum 3 points required"
+      : "Punt kan niet worden verwijderd - minimaal 3 punten vereist",
+    pointDeleted: isEn ? "Point deleted" : "Punt verwijderd",
+    holeMustBeInside: isEn
+      ? "Drilling hole must be placed inside the shape"
+      : "Boorgat moet binnen de vorm worden geplaatst",
+    holePlaced: isEn ? "Drilling hole placed" : "Boorgat geplaatst",
+    noShapeError: isEn
+      ? "No shape defined. Please draw or upload a shape."
+      : "Geen vorm gedefinieerd. Teken of upload een vorm.",
+    minHolesError: isEn
+      ? (count) => `Minimum 2 drilling holes required. Currently: ${count}`
+      : (count) => `Minimaal 2 boorgaten vereist. Huidig: ${count}`,
+    noMaterialError: isEn
+      ? "Please select a material."
+      : "Selecteer een materiaal.",
+    noThicknessError: isEn
+      ? "Please select a thickness."
+      : "Selecteer een dikte.",
+    noColorError: isEn
+      ? "Please select a color or request a special color."
+      : "Selecteer een kleur of vraag een speciale kleur aan.",
+    cornerRadiusTooLarge: isEn
+      ? (i) => `Corner ${i + 1} radius is too large for the adjacent edges.`
+      : (i) => `Hoek ${i + 1} radius is te groot voor de aangrenzende randen.`,
+    fixValidationErrors: isEn
+      ? "Please fix validation errors before submitting"
+      : "Los validatiefouten op voor verzending",
+    orderSubmitted: isEn
+      ? "Order submitted successfully!"
+      : "Bestelling succesvol ingediend!",
+    orderFailed: isEn
+      ? "Failed to submit order. Please try again."
+      : "Bestelling indienen mislukt. Probeer het opnieuw.",
+  };
+
   const searchParams = useSearchParams();
   const shapeId = searchParams.get("shapeId");
 
@@ -316,7 +375,7 @@ const DxfEditor = ({ lang, shapesText }) => {
     };
     setCornerSettings(newCornerSettings);
 
-    message.success("New point added");
+    message.success(txt.newPointAdded);
   };
 
   // Delete Point
@@ -324,7 +383,7 @@ const DxfEditor = ({ lang, shapesText }) => {
     const shape = shapes[shapeIndex];
 
     if (shape.points.length <= 3) {
-      message.warning("Cannot delete point - minimum 3 points required");
+      message.warning(txt.minPointsRequired);
       return;
     }
 
@@ -344,7 +403,7 @@ const DxfEditor = ({ lang, shapesText }) => {
     });
     setCornerSettings(newCornerSettings);
 
-    message.success("Point deleted");
+    message.success(txt.pointDeleted);
   };
 
   // ============= FIXED: Calculate Area and Perimeter =============
@@ -422,7 +481,7 @@ const DxfEditor = ({ lang, shapesText }) => {
   // Auto-Square: Make all angles 90 degrees
   const autoSquare = () => {
     if (shapes.length === 0) {
-      message.warning("No shapes to square");
+      message.warning(txt.noShapesToSquare);
       return;
     }
 
@@ -447,7 +506,7 @@ const DxfEditor = ({ lang, shapesText }) => {
     });
 
     updateShapes(updatedShapes);
-    message.success("Shape squared to 90° corners");
+    message.success(txt.shapeSquared);
   };
 
   // Grid Generator
@@ -581,7 +640,7 @@ const DxfEditor = ({ lang, shapesText }) => {
       roundingPoints.length > 0 &&
       roundingPoints[0].shapeIndex !== shapeIndex
     ) {
-      message.warning("Please select points from the same shape");
+      message.warning(txt.pointsFromSameShape);
       return;
     }
 
@@ -601,12 +660,12 @@ const DxfEditor = ({ lang, shapesText }) => {
               (idx2 === 0 && idx1 === numPoints - 1)));
 
         if (!isAdjacent) {
-          message.warning("Please select two adjacent points");
+          message.warning(txt.selectAdjacentPoints);
           setRoundingPoints([]);
           return;
         }
 
-        message.info("Drag the midpoint to create a round");
+        message.info(txt.dragMidpoint);
       }
     }
   };
@@ -689,7 +748,7 @@ const DxfEditor = ({ lang, shapesText }) => {
     });
 
     updateShapes(updatedShapes);
-    message.success("Round applied successfully!");
+    message.success(txt.roundApplied);
 
     setIsDraggingMidpoint(false);
     setDragOffset(0);
@@ -739,7 +798,7 @@ const DxfEditor = ({ lang, shapesText }) => {
     });
 
     if (!isInsideShape) {
-      message.warning("Drilling hole must be placed inside the shape");
+      message.warning(txt.holeMustBeInside);
       return;
     }
 
@@ -751,7 +810,7 @@ const DxfEditor = ({ lang, shapesText }) => {
     };
 
     setDrillingHoles([...drillingHoles, newHole]);
-    message.success("Drilling hole placed");
+    message.success(txt.holePlaced);
 
     if (drillingHoles.length >= 1) {
       setIsPlacingHole(false);
@@ -784,29 +843,27 @@ const DxfEditor = ({ lang, shapesText }) => {
 
     // Check if shapes exist
     if (shapes.length === 0) {
-      errors.push("No shape defined. Please draw or upload a shape.");
+      errors.push(txt.noShapeError);
     }
 
     // Check drilling holes (minimum 2 required)
     if (drillingHoles.length < 2) {
-      errors.push(
-        `Minimum 2 drilling holes required. Currently: ${drillingHoles.length}`,
-      );
+      errors.push(txt.minHolesError(drillingHoles.length));
     }
 
     // Check material selection
     if (!selectedMaterial) {
-      errors.push("Please select a material.");
+      errors.push(txt.noMaterialError);
     }
 
     // Check thickness
     if (!selectedThickness) {
-      errors.push("Please select a thickness.");
+      errors.push(txt.noThicknessError);
     }
 
     // Check color
     if (!selectedColor) {
-      errors.push("Please select a color or request a special color.");
+      errors.push(txt.noColorError);
     }
 
     // Check for invalid corners (radius intersection)
@@ -823,9 +880,7 @@ const DxfEditor = ({ lang, shapesText }) => {
 
           // corner.radius is in mm, distPrev/distNext are in pixels (mm)
           if (corner.radius > distPrev / 2 || corner.radius > distNext / 2) {
-            errors.push(
-              `Corner ${i + 1} radius is too large for the adjacent edges.`,
-            );
+            errors.push(txt.cornerRadiusTooLarge(i));
           }
         }
       }
@@ -928,7 +983,7 @@ const DxfEditor = ({ lang, shapesText }) => {
 
   const handleSubmitOrder = async () => {
     if (!validateOrder()) {
-      message.error("Please fix validation errors before submitting");
+      message.error(txt.fixValidationErrors);
       return;
     }
 
@@ -1039,7 +1094,7 @@ const DxfEditor = ({ lang, shapesText }) => {
       await Promise.all(itemsPromises);
 
       // Show success message
-      showToast.success("Order submitted successfully!");
+      showToast.success(txt.orderSubmitted);
 
       // Redirect to orders page
       setTimeout(() => {
@@ -1049,7 +1104,7 @@ const DxfEditor = ({ lang, shapesText }) => {
       console.error("Error submitting order:", error);
 
       // User-friendly error message
-      let errorMessage = "Failed to submit order. Please try again.";
+      let errorMessage = txt.orderFailed;
       if (error.response?.data) {
         const apiError = error.response.data;
         if (typeof apiError === "object") {
@@ -1150,6 +1205,7 @@ const DxfEditor = ({ lang, shapesText }) => {
               ref={containerRef}
             >
               <MainCanvasArea
+                lang={lang}
                 setShapes={setShapes}
                 setHistoryIndex={setHistoryIndex}
                 historyIndex={historyIndex}
@@ -1201,6 +1257,7 @@ const DxfEditor = ({ lang, shapesText }) => {
 
           {/* Order Confirmation Modal */}
           <OrderConfirmation
+            lang={lang}
             showValidationModal={showValidationModal}
             setShowValidationModal={setShowValidationModal}
             totalArea={totalArea}
