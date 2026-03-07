@@ -106,14 +106,19 @@ function LeftSidebar({
   isMaterialLoading,
   handleSubmitOrder,
 }) {
+  const isEn = lang === "en";
+
   const toggleShapeLock = (check) => {
     const updatedShapes = shapes.map((shape) =>
       shape.id ? { ...shape, locked: check } : shape,
     );
     updateShapes(updatedShapes);
-    showToast.success(check ? "Shape locked" : "Shape unlocked", {
-      duration: 2000,
-    });
+    showToast.success(
+      check ? shapesText?.shapeLocked : shapesText?.shapeUnlocked,
+      {
+        duration: 2000,
+      },
+    );
   };
 
   // Handle next step
@@ -125,15 +130,15 @@ function LeftSidebar({
     }
 
     if (currentStep === 1 && shapes.length === 0) {
-      message.warning("Please draw or upload a shape first");
+      message.warning(shapesText?.drawShapeFirst);
       return;
     }
     if (currentStep === 2 && drillingHoles.length < 2) {
-      message.warning("Please add at least 2 drilling holes");
+      message.warning(shapesText?.addTwoHoles);
       return;
     }
     if (currentStep === 3 && (!selectedMaterial || !selectedThickness)) {
-      message.warning("Please select material and thickness");
+      message.warning(shapesText?.selectMaterial);
       return;
     }
 
@@ -145,7 +150,7 @@ function LeftSidebar({
         // setShowValidationModal(true);
         handleSubmitOrder();
       } else {
-        message.error("Please fix validation errors before submitting");
+        message.error(shapesText?.fixErrors);
       }
     }
   };
@@ -201,47 +206,51 @@ function LeftSidebar({
         {currentStep === 1 && (
           <>
             {/* Editing Tools */}
-            <Card title="🛠️ Drawing Tools" size="small" className="shadow-md">
+            <Card
+              title={shapesText?.drawingTools}
+              size="small"
+              className="shadow-md"
+            >
               <Space orientation="vertical" className="w-full" size="small">
                 <div className="grid grid-cols-4 gap-2">
-                  <Tooltip title="Move Shape (Drag entire shape)">
+                  <Tooltip title={shapesText?.moveTooltip}>
                     <Button
                       type={toolMode === "select" ? "primary" : "default"}
                       icon={<DragOutlined />}
                       onClick={() => setToolMode("select")}
                       style={{ height: 40 }}
                     >
-                      Move
+                      {shapesText?.move}
                     </Button>
                   </Tooltip>
-                  <Tooltip title="Select Point">
+                  <Tooltip title={shapesText?.pointTooltip}>
                     <Button
                       type={toolMode === "select-point" ? "primary" : "default"}
                       icon={<AimOutlined />}
                       onClick={() => setToolMode("select-point")}
                       style={{ height: 40 }}
                     >
-                      Point
+                      {shapesText?.point}
                     </Button>
                   </Tooltip>
-                  <Tooltip title="Add Point">
+                  <Tooltip title={shapesText?.addTooltip}>
                     <Button
                       type={toolMode === "add-point" ? "primary" : "default"}
                       icon={<PlusOutlined />}
                       onClick={() => setToolMode("add-point")}
                       style={{ height: 40 }}
                     >
-                      Add
+                      {shapesText?.add}
                     </Button>
                   </Tooltip>
-                  <Tooltip title="Delete Point">
+                  <Tooltip title={shapesText?.deleteTooltip}>
                     <Button
                       type={toolMode === "delete-point" ? "primary" : "default"}
                       icon={<DeleteOutlined />}
                       onClick={() => setToolMode("delete-point")}
                       style={{ height: 40 }}
                     >
-                      Delete
+                      {shapesText?.delete}
                     </Button>
                   </Tooltip>
                 </div>
@@ -249,13 +258,15 @@ function LeftSidebar({
                 {toolMode === "select" && (
                   <Alert
                     type="info"
-                    title="🖐️ Click and drag the shape to move it"
+                    title={shapesText?.moveShapeInfo}
                     showIcon
                   />
                 )}
 
-                <Divider style={{ margin: "8px 0" }}>Rounding</Divider>
-                <Tooltip title="Round by Drag">
+                <Divider style={{ margin: "8px 0" }}>
+                  {shapesText?.rounding}
+                </Divider>
+                <Tooltip title={shapesText?.roundByDragTooltip}>
                   <Button
                     type={roundByDragActive ? "primary" : "default"}
                     icon={<RadiusSettingOutlined />}
@@ -263,7 +274,7 @@ function LeftSidebar({
                     block
                     style={{ height: 40 }}
                   >
-                    🔵 Round by Drag
+                    {shapesText?.roundByDrag}
                   </Button>
                 </Tooltip>
 
@@ -273,7 +284,7 @@ function LeftSidebar({
                   block
                   style={{ height: 40 }}
                 >
-                  📐 Auto-Square (90°)
+                  {shapesText?.autoSquare}
                 </Button>
 
                 {roundByDragActive && (
@@ -281,10 +292,10 @@ function LeftSidebar({
                     type={roundingPoints.length === 2 ? "success" : "info"}
                     title={
                       roundingPoints.length === 0
-                        ? "Step 1: Click first point"
+                        ? shapesText?.roundStep1
                         : roundingPoints.length === 1
-                          ? "Step 2: Click second adjacent point"
-                          : "Step 3: Drag the green midpoint"
+                          ? shapesText?.roundStep2
+                          : shapesText?.roundStep3
                     }
                     showIcon
                   />
@@ -295,14 +306,14 @@ function LeftSidebar({
             {/* Precision Movement */}
             {selectedPoint && toolMode === "select-point" && (
               <Card
-                title="🎯 Precision Movement"
+                title={shapesText?.precisionMovement}
                 size="small"
                 className="shadow-md border-2 border-purple-400"
               >
                 <Space orientation="vertical" className="w-full" size="small">
                   <Alert
-                    title={`Point ${selectedPoint.pointIndex + 1}`}
-                    description={`Position: (${Math.round(
+                    title={`${shapesText?.pointLabel} ${selectedPoint.pointIndex + 1}`}
+                    description={`${shapesText?.position}: (${Math.round(
                       shapes[selectedPoint.shapeIndex]?.points[
                         selectedPoint.pointIndex
                       ][0],
@@ -317,7 +328,7 @@ function LeftSidebar({
 
                   <div>
                     <label className="block text-sm font-medium mb-2">
-                      Move Increment: {moveIncrement}"
+                      {shapesText?.moveIncrement}: {moveIncrement}"
                     </label>
                     <InputNumber
                       value={moveIncrement}
@@ -399,7 +410,7 @@ function LeftSidebar({
                       block
                       size="small"
                     >
-                      Deselect
+                      {shapesText?.deselect}
                     </Button>
                     <Button
                       danger
@@ -413,7 +424,7 @@ function LeftSidebar({
                       block
                       size="small"
                     >
-                      Delete
+                      {shapesText?.deletePoint}
                     </Button>
                   </div>
                 </Space>
@@ -421,6 +432,8 @@ function LeftSidebar({
             )}
 
             <DimensionInput
+              lang={lang}
+              shapeText={shapesText?.shape}
               shapes={shapes}
               updateShapes={updateShapes}
               unit={unit}
@@ -498,6 +511,7 @@ function LeftSidebar({
         {/* Settings */}
         {currentStep === 1 && (
           <Settings
+            lang={lang}
             gridSize={gridSize}
             setGridSize={setGridSize}
             gridVisible={gridVisible}
@@ -514,11 +528,11 @@ function LeftSidebar({
           <div className="flex gap-2">
             {currentStep > 1 && (
               <Button onClick={handlePrevStep} block size="large">
-                ← Previous
+                {shapesText?.previous}
               </Button>
             )}
             <Button type="primary" onClick={handleNextStep} block size="large">
-              {currentStep === 4 ? "Submit Order" : "Next →"}
+              {currentStep === 4 ? shapesText?.submitOrder : shapesText?.next}
             </Button>
           </div>
         </Card>

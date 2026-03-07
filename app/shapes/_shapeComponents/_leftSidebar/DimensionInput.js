@@ -19,10 +19,45 @@ const { Option } = Select;
 // Constants: 1 pixel = 1 mm
 const MM_PER_CM = 10;
 
-function DimensionInput({ shapes, updateShapes, unit, setUnit }) {
+function DimensionInput({
+  lang,
+  shapeText,
+  shapes,
+  updateShapes,
+  unit,
+  setUnit,
+}) {
   const [dimensions, setDimensions] = useState([]);
   const [totalWidth, setTotalWidth] = useState(0);
   const [totalHeight, setTotalHeight] = useState(0);
+
+  const isEn = lang === "en";
+
+  const t = {
+    dimensions: isEn ? "📏 Dimensions" : "📏 Afmetingen",
+    noShape: isEn ? "No shape available" : "Geen vorm beschikbaar",
+    noShapeDesc: isEn
+      ? "Create or upload a shape to edit dimensions."
+      : "Maak of upload een vorm om afmetingen te bewerken.",
+    totalSize: isEn ? "Total Size" : "Totale grootte",
+    width: isEn ? "Width" : "Breedte",
+    height: isEn ? "Height" : "Hoogte",
+    sideLengths: isEn ? "Side Lengths" : "Zijlengtes",
+    totalPoints: isEn ? "Total Points:" : "Totaal punten:",
+    totalSides: isEn ? "Total Sides:" : "Totaal zijden:",
+    shapeType: isEn ? "Shape Type:" : "Vormtype:",
+    closed: isEn ? "Closed" : "Gesloten",
+    open: isEn ? "Open" : "Open",
+    side: isEn ? "Side" : "Zijde",
+    sideUpdated: (i) =>
+      isEn ? `Side ${i + 1} updated` : `Zijde ${i + 1} bijgewerkt`,
+    totalUpdated: (dim) =>
+      isEn
+        ? `Total ${dim} updated`
+        : `Totale ${dim === "width" ? "breedte" : "hoogte"} bijgewerkt`,
+    scaled: (f) =>
+      isEn ? `Shape scaled by ${f}x` : `Vorm geschaald met ${f}x`,
+  };
 
   // Calculate dimensions when shapes change
   useEffect(() => {
@@ -53,7 +88,7 @@ function DimensionInput({ shapes, updateShapes, unit, setUnit }) {
 
         newDimensions.push({
           key: i,
-          side: `Side ${i + 1}`,
+          side: `${t?.side} ${i + 1}`,
           startPoint: i + 1,
           endPoint: ((i + 1) % shape.points.length) + 1,
           length: length, // in mm (pixels)
@@ -113,7 +148,7 @@ function DimensionInput({ shapes, updateShapes, unit, setUnit }) {
     });
 
     updateShapes(updatedShapes);
-    message.success(`Side ${index + 1} updated`);
+    message.success(t?.sideUpdated(index));
   };
 
   // Handle total width/height change
@@ -151,7 +186,7 @@ function DimensionInput({ shapes, updateShapes, unit, setUnit }) {
     });
 
     updateShapes(updatedShapes);
-    message.success(`Total ${dimension} updated`);
+    message.success(t?.totalUpdated(dimension));
   };
 
   // Scale entire shape proportionally
@@ -172,16 +207,16 @@ function DimensionInput({ shapes, updateShapes, unit, setUnit }) {
     });
 
     updateShapes(updatedShapes);
-    message.success(`Shape scaled by ${scaleFactor}x`);
+    message.success(t?.scaled(scaleFactor));
   };
 
   if (shapes.length === 0) {
     return (
-      <Card title="📏 Dimensions" size="small" className="shadow-md">
+      <Card title={t?.dimensions} size="small" className="shadow-md">
         <Alert
           type="info"
-          title="No shape available"
-          description="Create or upload a shape to edit dimensions."
+          title={t?.noShape}
+          description={t?.noShapeDesc}
           showIcon
         />
       </Card>
@@ -192,7 +227,7 @@ function DimensionInput({ shapes, updateShapes, unit, setUnit }) {
     <Card
       title={
         <div className="flex justify-between items-center">
-          <span>📏 Dimensions</span>
+          <span>{t?.dimensions}</span>
           <Select
             value={unit}
             onChange={setUnit}
@@ -212,12 +247,12 @@ function DimensionInput({ shapes, updateShapes, unit, setUnit }) {
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-3 rounded-lg">
           <div className="text-sm font-medium mb-2 text-blue-700 flex items-center gap-1">
             <ExpandOutlined />
-            Total Size
+            {t?.totalSize}
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-xs text-gray-500 block mb-1">
-                Width ({unit})
+                {t?.width} ({unit})
               </label>
               <InputNumber
                 value={parseFloat(
@@ -231,7 +266,7 @@ function DimensionInput({ shapes, updateShapes, unit, setUnit }) {
             </div>
             <div>
               <label className="text-xs text-gray-500 block mb-1">
-                Height ({unit})
+                {t?.height} ({unit})
               </label>
               <InputNumber
                 value={parseFloat(
@@ -267,7 +302,7 @@ function DimensionInput({ shapes, updateShapes, unit, setUnit }) {
           </Button>
         </div>
 
-        <Divider style={{ margin: "8px 0" }}>Side Lengths</Divider>
+        <Divider style={{ margin: "8px 0" }}>{t?.sideLengths}</Divider>
 
         {/* Side Dimensions List */}
         <div className="max-h-48 overflow-y-auto space-y-2">
@@ -312,17 +347,17 @@ function DimensionInput({ shapes, updateShapes, unit, setUnit }) {
         {/* Summary */}
         <div className="bg-green-50 p-2 rounded text-xs">
           <div className="flex justify-between">
-            <span className="text-gray-600">Total Points:</span>
+            <span className="text-gray-600">{t?.totalPoints}</span>
             <span className="font-medium">{shapes[0]?.points.length || 0}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-gray-600">Total Sides:</span>
+            <span className="text-gray-600">{t?.totalSides}</span>
             <span className="font-medium">{dimensions.length}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-gray-600">Shape Type:</span>
+            <span className="text-gray-600">{t?.shapeType}</span>
             <span className="font-medium">
-              {shapes[0]?.closed ? "Closed" : "Open"}
+              {shapes[0]?.closed ? t?.closed : t?.open}
             </span>
           </div>
         </div>
