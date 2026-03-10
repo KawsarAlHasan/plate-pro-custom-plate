@@ -24,6 +24,8 @@ export default async function RootLayout({ children }) {
         <main>{children}</main>
         <Footer dict={dict} />
       </body>
+
+      <script defer src="https://app.fastbots.ai/embed.js" data-bot-id="cmmk8igxz02d1pb1pwdjnbf2e"></script>
     </html>
   );
 }

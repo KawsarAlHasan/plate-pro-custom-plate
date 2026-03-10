@@ -119,7 +119,8 @@ const DxfEditor = ({ lang, shapesText }) => {
   const { materialList, isLoading: isMaterialLoading } = useMaterialList();
   const { drillingArea } = useDrillingArea();
 
-  console.log("drillingArea", drillingArea);
+  const minHoleDistance = drillingArea.minHoleDistance;
+  const maxHoleDistance = drillingArea.maxHoleDistance;
 
   const router = useRouter();
 
@@ -149,12 +150,6 @@ const DxfEditor = ({ lang, shapesText }) => {
   // Drilling Holes State
   const [drillingHoles, setDrillingHoles] = useState([]);
   const [isPlacingHole, setIsPlacingHole] = useState(false);
-
-  // ============= NEW: Hole Distance Constraint State =============
-  // minHoleDistance: hole must be at least this many mm from any edge
-  // maxHoleDistance: hole must be at most this many mm from the nearest edge
-  const [minHoleDistance, setMinHoleDistance] = useState(10); // 10mm default
-  const [maxHoleDistance, setMaxHoleDistance] = useState(null); // null = no max limit
 
   // Corner Settings State
   const [cornerSettings, setCornerSettings] = useState({});
@@ -861,7 +856,9 @@ const DxfEditor = ({ lang, shapesText }) => {
       holeDragValidRef.current[holeId] = { ...newPos };
       // Update position visually
       setDrillingHoles((prev) =>
-        prev.map((h) => (h.id === holeId ? { ...h, x: newPos.x, y: newPos.y } : h)),
+        prev.map((h) =>
+          h.id === holeId ? { ...h, x: newPos.x, y: newPos.y } : h,
+        ),
       );
       return newPos; // tell canvas: use this position
     } else {
@@ -885,7 +882,9 @@ const DxfEditor = ({ lang, shapesText }) => {
     if (result.valid) {
       holeDragValidRef.current[holeId] = { ...finalPos };
       setDrillingHoles((prev) =>
-        prev.map((h) => (h.id === holeId ? { ...h, x: finalPos.x, y: finalPos.y } : h)),
+        prev.map((h) =>
+          h.id === holeId ? { ...h, x: finalPos.x, y: finalPos.y } : h,
+        ),
       );
     } else {
       // Revert to last valid position and show error
@@ -918,7 +917,11 @@ const DxfEditor = ({ lang, shapesText }) => {
     const abLenSq = abx * abx + aby * aby;
 
     if (abLenSq === 0) {
-      return { x: a[0], y: a[1], dist: Math.hypot(point.x - a[0], point.y - a[1]) };
+      return {
+        x: a[0],
+        y: a[1],
+        dist: Math.hypot(point.x - a[0], point.y - a[1]),
+      };
     }
 
     const t = Math.max(
@@ -995,7 +998,11 @@ const DxfEditor = ({ lang, shapesText }) => {
       let bestEdgePt = null;
       let bestDist = Infinity;
       for (let i = 0; i < n; i++) {
-        const cp = getClosestPointOnSegment(clickedPos, pts[i], pts[(i + 1) % n]);
+        const cp = getClosestPointOnSegment(
+          clickedPos,
+          pts[i],
+          pts[(i + 1) % n],
+        );
         if (cp.dist < bestDist) {
           bestDist = cp.dist;
           bestEdgePt = cp;
@@ -1004,9 +1011,16 @@ const DxfEditor = ({ lang, shapesText }) => {
 
       // Push inward from that edge point toward centroid by minHoleDistance
       const inwardDir = dirToCentroid({ x: bestEdgePt.x, y: bestEdgePt.y });
-      const target = minHoleDistance > 0
-        ? { x: bestEdgePt.x + inwardDir.x * minHoleDistance, y: bestEdgePt.y + inwardDir.y * minHoleDistance }
-        : { x: bestEdgePt.x + inwardDir.x * 1, y: bestEdgePt.y + inwardDir.y * 1 };
+      const target =
+        minHoleDistance > 0
+          ? {
+              x: bestEdgePt.x + inwardDir.x * minHoleDistance,
+              y: bestEdgePt.y + inwardDir.y * minHoleDistance,
+            }
+          : {
+              x: bestEdgePt.x + inwardDir.x * 1,
+              y: bestEdgePt.y + inwardDir.y * 1,
+            };
 
       // Verify it's inside and satisfies constraints; if not, return centroid as fallback
       if (insideShape(target)) {
@@ -1040,8 +1054,14 @@ const DxfEditor = ({ lang, shapesText }) => {
 
       for (let iter = 0; iter < 50; iter++) {
         const mid = (lo + hi) / 2;
-        const candidate = { x: clickedPos.x + dir.x * mid, y: clickedPos.y + dir.y * mid };
-        if (!insideShape(candidate)) { hi = mid; continue; }
+        const candidate = {
+          x: clickedPos.x + dir.x * mid,
+          y: clickedPos.y + dir.y * mid,
+        };
+        if (!insideShape(candidate)) {
+          hi = mid;
+          continue;
+        }
         const d = distToEdge(candidate);
         if (d < minHoleDistance) lo = mid;
         else hi = mid;
@@ -1066,7 +1086,11 @@ const DxfEditor = ({ lang, shapesText }) => {
       let bestEdgePt = null;
       let bestEdgeDist = Infinity;
       for (let i = 0; i < n; i++) {
-        const cp = getClosestPointOnSegment(clickedPos, pts[i], pts[(i + 1) % n]);
+        const cp = getClosestPointOnSegment(
+          clickedPos,
+          pts[i],
+          pts[(i + 1) % n],
+        );
         if (cp.dist < bestEdgeDist) {
           bestEdgeDist = cp.dist;
           bestEdgePt = cp;
@@ -1529,9 +1553,7 @@ const DxfEditor = ({ lang, shapesText }) => {
               setIsPlacingHole={setIsPlacingHole}
               // NEW: Pass hole distance constraints to sidebar
               minHoleDistance={minHoleDistance}
-              setMinHoleDistance={setMinHoleDistance}
               maxHoleDistance={maxHoleDistance}
-              setMaxHoleDistance={setMaxHoleDistance}
               selectedMaterial={selectedMaterial}
               setSelectedMaterial={setSelectedMaterial}
               selectedThickness={selectedThickness}

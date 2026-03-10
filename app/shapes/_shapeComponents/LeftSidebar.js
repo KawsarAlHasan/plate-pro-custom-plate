@@ -88,9 +88,7 @@ function LeftSidebar({
 
   /* NEW: Hole distance constraints */
   minHoleDistance,
-  setMinHoleDistance,
   maxHoleDistance,
-  setMaxHoleDistance,
 
   /* Material selection */
   selectedMaterial,
@@ -462,9 +460,7 @@ function LeftSidebar({
             shapes={shapes}
             // NEW: Pass distance constraints through
             minHoleDistance={minHoleDistance}
-            setMinHoleDistance={setMinHoleDistance}
             maxHoleDistance={maxHoleDistance}
-            setMaxHoleDistance={setMaxHoleDistance}
           />
         )}
 

@@ -33,9 +33,7 @@ function DrillingHoles({
   shapes,
   // NEW: Distance constraint props
   minHoleDistance,
-  setMinHoleDistance,
   maxHoleDistance,
-  setMaxHoleDistance,
 }) {
   const [editingHole, setEditingHole] = useState(null);
   const [editX, setEditX] = useState(0);
@@ -71,16 +69,6 @@ function DrillingHoles({
     message.success(holesText?.holePositionUpdated);
   };
 
-  // Toggle max distance constraint
-  const handleToggleMax = (checked) => {
-    setMaxEnabled(checked);
-    if (checked) {
-      // Default max = minHoleDistance + 20mm when first enabled
-      setMaxHoleDistance((minHoleDistance || 10) + 20);
-    } else {
-      setMaxHoleDistance(null);
-    }
-  };
 
   const columns = [
     {
@@ -187,104 +175,28 @@ function DrillingHoles({
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
           <div className="flex items-center gap-1 text-sm font-semibold text-amber-800 mb-2">
             <InfoCircleOutlined />
-            <span>
-              {isEn ? "Distance from Edge" : "Afstand van de rand"}
-            </span>
-          </div>
-
-          {/* Min Distance */}
-          <div className="mb-3">
-            <div className="flex items-center justify-between mb-1">
-              <label className="text-xs font-medium text-gray-600">
-                {isEn ? "Minimum distance" : "Minimale afstand"}
-              </label>
-              <Tooltip
-                title={
-                  isEn
-                    ? "Hole must be at least this far from any edge"
-                    : "Gat moet minimaal deze afstand van de rand zijn"
-                }
-              >
-                <InfoCircleOutlined className="text-gray-400 text-xs" />
-              </Tooltip>
-            </div>
-            <div className="flex items-center gap-2">
-              <InputNumber
-                value={minHoleDistance}
-                onChange={(val) => setMinHoleDistance(val ?? 0)}
-                min={0}
-                max={maxHoleDistance !== null ? maxHoleDistance - 1 : 500}
-                step={1}
-                addonAfter="mm"
-                size="small"
-                style={{ width: "100%" }}
-              />
-            </div>
-            {minHoleDistance > 0 && (
-              <div className="mt-1 text-xs text-amber-700 bg-amber-100 rounded px-2 py-1">
-                {isEn
-                  ? `✓ Holes must be ≥ ${minHoleDistance}mm from any edge`
-                  : `✓ Gaten moeten ≥ ${minHoleDistance}mm van de rand zijn`}
-              </div>
-            )}
-          </div>
-
-          {/* Max Distance (optional) */}
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="text-xs font-medium text-gray-600">
-                {isEn ? "Maximum distance" : "Maximale afstand"}
-              </label>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-400">
-                  {isEn ? "Enable" : "Inschakelen"}
-                </span>
-                <Switch
-                  size="small"
-                  checked={maxEnabled}
-                  onChange={handleToggleMax}
-                />
-              </div>
-            </div>
-            {maxEnabled && (
-              <>
-                <div className="flex items-center gap-2">
-                  <InputNumber
-                    value={maxHoleDistance}
-                    onChange={(val) => setMaxHoleDistance(val ?? null)}
-                    min={minHoleDistance + 1}
-                    max={9999}
-                    step={1}
-                    addonAfter="mm"
-                    size="small"
-                    style={{ width: "100%" }}
-                  />
-                </div>
-                <div className="mt-1 text-xs text-amber-700 bg-amber-100 rounded px-2 py-1">
-                  {isEn
-                    ? `✓ Holes must be ≤ ${maxHoleDistance}mm from the nearest edge`
-                    : `✓ Gaten moeten ≤ ${maxHoleDistance}mm van de dichtstbijzijnde rand zijn`}
-                </div>
-              </>
-            )}
+            <span>{isEn ? "Distance from Edge" : "Afstand van de rand"}</span>
           </div>
 
           {/* Active rule summary */}
           {(minHoleDistance > 0 || maxEnabled) && (
-            <div className="mt-2 pt-2 border-t border-amber-200">
+            <div className="">
               <div className="text-xs font-medium text-amber-900">
                 {isEn ? "Active rule:" : "Actieve regel:"}
               </div>
               <div className="text-xs text-amber-700 mt-0.5">
-                {minHoleDistance > 0 && !maxEnabled &&
+                {minHoleDistance > 0 &&
+                  !maxEnabled &&
                   (isEn
                     ? `Edge distance ≥ ${minHoleDistance}mm`
                     : `Randafstand ≥ ${minHoleDistance}mm`)}
-                {minHoleDistance === 0 && maxEnabled &&
+                {minHoleDistance === 0 &&
+                  maxEnabled &&
                   (isEn
                     ? `Edge distance ≤ ${maxHoleDistance}mm`
                     : `Randafstand ≤ ${maxHoleDistance}mm`)}
-                {minHoleDistance > 0 && maxEnabled &&
+                {minHoleDistance > 0 &&
+                  maxEnabled &&
                   (isEn
                     ? `${minHoleDistance}mm ≤ edge distance ≤ ${maxHoleDistance}mm`
                     : `${minHoleDistance}mm ≤ randafstand ≤ ${maxHoleDistance}mm`)}
