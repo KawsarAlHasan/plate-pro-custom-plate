@@ -16,7 +16,7 @@ export default async function Home() {
       <AuthModalProvider>
         <section>
           <div className="w-full">
-            <Guide />
+            {/* <Guide /> */}
             <Banner bannerText={homeText?.banner} />
             <FeaturedShapeAndSize shapeAndSizeText={homeText?.featuredShapes} />
             <HowItsWork howItWorksText={homeText?.howItWorks} />
