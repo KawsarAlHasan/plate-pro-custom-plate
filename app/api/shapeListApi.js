@@ -5,7 +5,7 @@ import { fetcher } from "./api";
 export const useShapeList = () => {
   const { data, error, mutate } = useSWR(
     "/api/services/plate-shapes/list/",
-    fetcher
+    fetcher,
   );
   return {
     shapeList: data,
@@ -16,12 +16,25 @@ export const useShapeList = () => {
 };
 
 export const useMaterialList = () => {
-  const { data, error, mutate } = useSWR(
-    "/api/services/materials/",
-    fetcher
-  );
+  const { data, error, mutate } = useSWR("/api/services/materials/", fetcher);
   return {
     materialList: data,
+    isLoading: !data && !error,
+    isError: error,
+    mutate,
+  };
+};
+
+export const useDrillingArea = () => {
+  const { data, error, mutate } = useSWR(
+    "/api/services/drilling-area/",
+    fetcher,
+  );
+  return {
+    drillingArea: {
+      minHoleDistance: parseInt(data?.buttom) || 0,
+      maxHoleDistance: parseInt(data?.top) || 0,
+    },
     isLoading: !data && !error,
     isError: error,
     mutate,

@@ -1,3 +1,4 @@
+// DrillingHoles.js
 "use client";
 import {
   Card,
@@ -10,12 +11,14 @@ import {
   Popconfirm,
   message,
   Badge,
+  Switch,
+  Tooltip,
 } from "antd";
 import {
   PlusOutlined,
   DeleteOutlined,
   AimOutlined,
-  EditOutlined,
+  InfoCircleOutlined,
 } from "@ant-design/icons";
 import React, { useState } from "react";
 
@@ -28,10 +31,18 @@ function DrillingHoles({
   setIsPlacingHole,
   setToolMode,
   shapes,
+  // NEW: Distance constraint props
+  minHoleDistance,
+  setMinHoleDistance,
+  maxHoleDistance,
+  setMaxHoleDistance,
 }) {
   const [editingHole, setEditingHole] = useState(null);
   const [editX, setEditX] = useState(0);
   const [editY, setEditY] = useState(0);
+  const [maxEnabled, setMaxEnabled] = useState(maxHoleDistance !== null);
+
+  const isEn = lang === "en";
 
   const HOLE_DIAMETER = 6; // Fixed 6mm diameter
   const MIN_HOLES = 2;
@@ -49,13 +60,6 @@ function DrillingHoles({
     message.success(holesText?.holeDeleted);
   };
 
-  // Start editing hole position
-  const startEditingHole = (hole) => {
-    setEditingHole(hole.id);
-    setEditX(Math.round(hole.x));
-    setEditY(Math.round(hole.y));
-  };
-
   // Save hole position
   const saveHolePosition = (holeId) => {
     setDrillingHoles(
@@ -67,25 +71,15 @@ function DrillingHoles({
     message.success(holesText?.holePositionUpdated);
   };
 
-  // Calculate distance from edge
-  const getDistanceFromEdge = (hole) => {
-    if (shapes.length === 0 || !shapes[0].points)
-      return { top: 0, left: 0, right: 0, bottom: 0 };
-
-    const points = shapes[0].points;
-    const xs = points.map((p) => p[0]);
-    const ys = points.map((p) => p[1]);
-    const minX = Math.min(...xs);
-    const maxX = Math.max(...xs);
-    const minY = Math.min(...ys);
-    const maxY = Math.max(...ys);
-
-    return {
-      left: Math.round(hole.x - minX),
-      right: Math.round(maxX - hole.x),
-      top: Math.round(hole.y - minY),
-      bottom: Math.round(maxY - hole.y),
-    };
+  // Toggle max distance constraint
+  const handleToggleMax = (checked) => {
+    setMaxEnabled(checked);
+    if (checked) {
+      // Default max = minHoleDistance + 20mm when first enabled
+      setMaxHoleDistance((minHoleDistance || 10) + 20);
+    } else {
+      setMaxHoleDistance(null);
+    }
   };
 
   const columns = [
@@ -105,40 +99,6 @@ function DrillingHoles({
       width: 80,
       render: () => <span>6mm</span>,
     },
-    // {
-    //   title: "X",
-    //   dataIndex: "x",
-    //   key: "x",
-    //   width: 80,
-    //   render: (x, record) =>
-    //     editingHole === record.id ? (
-    //       <InputNumber
-    //         value={editX}
-    //         onChange={(val) => setEditX(val || 0)}
-    //         size="small"
-    //         style={{ width: 70 }}
-    //       />
-    //     ) : (
-    //       <span>{Math.round(x)}px</span>
-    //     ),
-    // },
-    // {
-    //   title: "Y",
-    //   dataIndex: "y",
-    //   key: "y",
-    //   width: 80,
-    //   render: (y, record) =>
-    //     editingHole === record.id ? (
-    //       <InputNumber
-    //         value={editY}
-    //         onChange={(val) => setEditY(val || 0)}
-    //         size="small"
-    //         style={{ width: 70 }}
-    //       />
-    //     ) : (
-    //       <span>{Math.round(y)}px</span>
-    //     ),
-    // },
     {
       title: holesText?.actions,
       key: "actions",
@@ -154,21 +114,14 @@ function DrillingHoles({
               {holesText?.save}
             </Button>
           ) : (
-            <>
-              {/* <Button
-                size="small"
-                icon={<EditOutlined />}
-                onClick={() => startEditingHole(record)}
-              /> */}
-              <Popconfirm
-                title={holesText?.deleteTitle}
-                onConfirm={() => deleteHole(record.id)}
-                okText="Yes"
-                cancelText="No"
-              >
-                <Button size="small" danger icon={<DeleteOutlined />} />
-              </Popconfirm>
-            </>
+            <Popconfirm
+              title={holesText?.deleteTitle}
+              onConfirm={() => deleteHole(record.id)}
+              okText="Yes"
+              cancelText="No"
+            >
+              <Button size="small" danger icon={<DeleteOutlined />} />
+            </Popconfirm>
           )}
         </Space>
       ),
@@ -198,7 +151,7 @@ function DrillingHoles({
           <Alert
             type="warning"
             title={
-              lang === "en"
+              isEn
                 ? `${holesNeeded} more hole${holesNeeded > 1 ? "s" : ""} required`
                 : `Nog ${holesNeeded} gat${holesNeeded > 1 ? "en" : ""} nodig`
             }
@@ -230,6 +183,117 @@ function DrillingHoles({
           </div>
         </div>
 
+        {/* ============= NEW: Distance from Edge Settings ============= */}
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+          <div className="flex items-center gap-1 text-sm font-semibold text-amber-800 mb-2">
+            <InfoCircleOutlined />
+            <span>
+              {isEn ? "Distance from Edge" : "Afstand van de rand"}
+            </span>
+          </div>
+
+          {/* Min Distance */}
+          <div className="mb-3">
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-xs font-medium text-gray-600">
+                {isEn ? "Minimum distance" : "Minimale afstand"}
+              </label>
+              <Tooltip
+                title={
+                  isEn
+                    ? "Hole must be at least this far from any edge"
+                    : "Gat moet minimaal deze afstand van de rand zijn"
+                }
+              >
+                <InfoCircleOutlined className="text-gray-400 text-xs" />
+              </Tooltip>
+            </div>
+            <div className="flex items-center gap-2">
+              <InputNumber
+                value={minHoleDistance}
+                onChange={(val) => setMinHoleDistance(val ?? 0)}
+                min={0}
+                max={maxHoleDistance !== null ? maxHoleDistance - 1 : 500}
+                step={1}
+                addonAfter="mm"
+                size="small"
+                style={{ width: "100%" }}
+              />
+            </div>
+            {minHoleDistance > 0 && (
+              <div className="mt-1 text-xs text-amber-700 bg-amber-100 rounded px-2 py-1">
+                {isEn
+                  ? `✓ Holes must be ≥ ${minHoleDistance}mm from any edge`
+                  : `✓ Gaten moeten ≥ ${minHoleDistance}mm van de rand zijn`}
+              </div>
+            )}
+          </div>
+
+          {/* Max Distance (optional) */}
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-xs font-medium text-gray-600">
+                {isEn ? "Maximum distance" : "Maximale afstand"}
+              </label>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-gray-400">
+                  {isEn ? "Enable" : "Inschakelen"}
+                </span>
+                <Switch
+                  size="small"
+                  checked={maxEnabled}
+                  onChange={handleToggleMax}
+                />
+              </div>
+            </div>
+            {maxEnabled && (
+              <>
+                <div className="flex items-center gap-2">
+                  <InputNumber
+                    value={maxHoleDistance}
+                    onChange={(val) => setMaxHoleDistance(val ?? null)}
+                    min={minHoleDistance + 1}
+                    max={9999}
+                    step={1}
+                    addonAfter="mm"
+                    size="small"
+                    style={{ width: "100%" }}
+                  />
+                </div>
+                <div className="mt-1 text-xs text-amber-700 bg-amber-100 rounded px-2 py-1">
+                  {isEn
+                    ? `✓ Holes must be ≤ ${maxHoleDistance}mm from the nearest edge`
+                    : `✓ Gaten moeten ≤ ${maxHoleDistance}mm van de dichtstbijzijnde rand zijn`}
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Active rule summary */}
+          {(minHoleDistance > 0 || maxEnabled) && (
+            <div className="mt-2 pt-2 border-t border-amber-200">
+              <div className="text-xs font-medium text-amber-900">
+                {isEn ? "Active rule:" : "Actieve regel:"}
+              </div>
+              <div className="text-xs text-amber-700 mt-0.5">
+                {minHoleDistance > 0 && !maxEnabled &&
+                  (isEn
+                    ? `Edge distance ≥ ${minHoleDistance}mm`
+                    : `Randafstand ≥ ${minHoleDistance}mm`)}
+                {minHoleDistance === 0 && maxEnabled &&
+                  (isEn
+                    ? `Edge distance ≤ ${maxHoleDistance}mm`
+                    : `Randafstand ≤ ${maxHoleDistance}mm`)}
+                {minHoleDistance > 0 && maxEnabled &&
+                  (isEn
+                    ? `${minHoleDistance}mm ≤ edge distance ≤ ${maxHoleDistance}mm`
+                    : `${minHoleDistance}mm ≤ randafstand ≤ ${maxHoleDistance}mm`)}
+              </div>
+            </div>
+          )}
+        </div>
+        {/* ============= END Distance Settings ============= */}
+
         {/* Add Hole Button */}
         <Button
           type={isPlacingHole ? "default" : "primary"}
@@ -249,7 +313,11 @@ function DrillingHoles({
           <Alert
             type="info"
             title={holesText?.pricingAlertTitle}
-            description={holesText?.pricingAlertDesc}
+            description={
+              isEn
+                ? `Click inside the shape. Hole must be${minHoleDistance > 0 ? ` ≥${minHoleDistance}mm` : ""}${maxEnabled ? ` and ≤${maxHoleDistance}mm` : ""} from any edge.`
+                : `Klik binnen de vorm. Gat moet${minHoleDistance > 0 ? ` ≥${minHoleDistance}mm` : ""}${maxEnabled ? ` en ≤${maxHoleDistance}mm` : ""} van de rand zijn.`
+            }
             showIcon
           />
         )}
@@ -259,7 +327,7 @@ function DrillingHoles({
         {/* Holes Table */}
         {drillingHoles.length > 0 ? (
           <Table
-            dataSource={drillingHoles.map((h, idx) => ({ ...h, key: h.id }))}
+            dataSource={drillingHoles.map((h) => ({ ...h, key: h.id }))}
             columns={columns}
             size="small"
             pagination={false}

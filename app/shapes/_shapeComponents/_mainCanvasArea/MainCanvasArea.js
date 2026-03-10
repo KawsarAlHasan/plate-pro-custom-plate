@@ -33,6 +33,9 @@ function MainCanvasArea({
   handleMidpointDragEnd,
   dragOffset,
   setDrillingHoles,
+  // NEW: validated drag handlers
+  handleHoleDrag,
+  handleHoleDragEnd,
   isPlacingHole,
   roundByDragActive,
   showMeasurements,
@@ -187,15 +190,44 @@ function MainCanvasArea({
           stroke="#ffffff"
           strokeWidth={2 / scale}
           draggable={toolMode === "select"}
+          onDragMove={(e) => {
+            if (!handleHoleDrag) return;
+            const node = e.target;
+            const newPos = { x: node.x(), y: node.y() };
+            // handleHoleDrag returns the corrected (valid) position
+            const correctedPos = handleHoleDrag(hole.id, newPos);
+            // Force the Konva node to the corrected position immediately
+            if (correctedPos) {
+              node.x(correctedPos.x);
+              node.y(correctedPos.y);
+            }
+          }}
           onDragEnd={(e) => {
-            const newPos = e.target.position();
-            setDrillingHoles(
-              drillingHoles.map((h) =>
-                h.id === hole.id ? { ...h, x: newPos.x, y: newPos.y } : h,
-              ),
-            );
+            const finalPos = { x: e.target.x(), y: e.target.y() };
+            if (handleHoleDragEnd) {
+              // handleHoleDragEnd handles state update + validation + revert
+              handleHoleDragEnd(hole.id, finalPos);
+            } else {
+              // Fallback: raw update (no validation)
+              setDrillingHoles(
+                drillingHoles.map((h) =>
+                  h.id === hole.id ? { ...h, x: finalPos.x, y: finalPos.y } : h,
+                ),
+              );
+            }
+          }}
+          onMouseEnter={(e) => {
+            if (toolMode === "select") {
+              const container = e.target.getStage().container();
+              container.style.cursor = "move";
+            }
+          }}
+          onMouseLeave={(e) => {
+            const container = e.target.getStage().container();
+            container.style.cursor = "default";
           }}
         />
+        {/* Inner white circle to show hole */}
         <Circle
           x={hole.x}
           y={hole.y}
@@ -203,6 +235,7 @@ function MainCanvasArea({
           fill="#ffffff"
           listening={false}
         />
+        {/* Diameter label */}
         <Text
           x={hole.x + 15 / scale}
           y={hole.y - 8 / scale}
@@ -478,13 +511,11 @@ function MainCanvasArea({
                           const midX = (point[0] + nextPoint[0]) / 2;
                           const midY = (point[1] + nextPoint[1]) / 2;
 
-                          // Distance in pixels = Distance in mm (since 1 pixel = 1 mm)
                           const distanceInMm = Math.sqrt(
                             Math.pow(nextPoint[0] - point[0], 2) +
                               Math.pow(nextPoint[1] - point[1], 2),
                           );
 
-                          // Format based on selected unit
                           const displayText = formatDistance(distanceInMm);
 
                           return (

@@ -1,3 +1,4 @@
+// LeftSidebar.js
 "use client";
 import {
   Button,
@@ -25,7 +26,7 @@ import {
 } from "@ant-design/icons";
 import StepIndicator from "./_leftSidebar/StepIndicator";
 import Settings from "./_leftSidebar/Settings";
-// import ShapeProperties from "./_leftSidebar/ShapeProperties";
+import ShapeProperties from "./_leftSidebar/ShapeProperties";
 import DrillingHoles from "./_leftSidebar/DrillingHoles";
 import MaterialSelector from "./_leftSidebar/MaterialSelector";
 import PricingPanel from "./_leftSidebar/PricingPanel";
@@ -84,6 +85,12 @@ function LeftSidebar({
   setDrillingHoles,
   isPlacingHole,
   setIsPlacingHole,
+
+  /* NEW: Hole distance constraints */
+  minHoleDistance,
+  setMinHoleDistance,
+  maxHoleDistance,
+  setMaxHoleDistance,
 
   /* Material selection */
   selectedMaterial,
@@ -453,6 +460,11 @@ function LeftSidebar({
             setIsPlacingHole={setIsPlacingHole}
             setToolMode={setToolMode}
             shapes={shapes}
+            // NEW: Pass distance constraints through
+            minHoleDistance={minHoleDistance}
+            setMinHoleDistance={setMinHoleDistance}
+            maxHoleDistance={maxHoleDistance}
+            setMaxHoleDistance={setMaxHoleDistance}
           />
         )}
 
@@ -498,15 +510,15 @@ function LeftSidebar({
         )}
 
         {/* Shape Properties */}
-        {/* {selectedShape && currentStep === 1 && (
-        <ShapeProperties
-          shapes={shapes}
-          selectedShape={selectedShape}
-          updateShapes={updateShapes}
-          setSelectedShape={setSelectedShape}
-          setSelectedPoint={setSelectedPoint}
-        />
-      )} */}
+        {selectedShape && currentStep === 1 && (
+          <ShapeProperties
+            shapes={shapes}
+            selectedShape={selectedShape}
+            updateShapes={updateShapes}
+            setSelectedShape={setSelectedShape}
+            setSelectedPoint={setSelectedPoint}
+          />
+        )}
 
         {/* Settings */}
         {currentStep === 1 && (

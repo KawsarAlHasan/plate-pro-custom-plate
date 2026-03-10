@@ -1,10 +1,15 @@
+// DxfEditor.js
 "use client";
 import { useState, useRef, useEffect, useMemo } from "react";
 import { Line } from "react-konva";
 import { Button, message } from "antd";
 import { produce } from "immer";
 import ShapeTemplate from "./ShapeTemplate";
-import { useShapeList, useMaterialList } from "../api/shapeListApi";
+import {
+  useShapeList,
+  useMaterialList,
+  useDrillingArea,
+} from "../api/shapeListApi";
 import { useRouter, useSearchParams } from "next/navigation";
 import LeftSidebar from "./_shapeComponents/LeftSidebar";
 import OrderConfirmation from "./_shapeComponents/OrderConfirmation";
@@ -67,6 +72,17 @@ const DxfEditor = ({ lang, shapesText }) => {
       ? "Drilling hole must be placed inside the shape"
       : "Boorgat moet binnen de vorm worden geplaatst",
     holePlaced: isEn ? "Drilling hole placed" : "Boorgat geplaatst",
+    // Distance-from-edge error messages
+    holeTooCloseToEdge: isEn
+      ? (dist, min) =>
+          `Hole is ${dist}mm from the edge. Minimum distance is ${min}mm.`
+      : (dist, min) =>
+          `Gat is ${dist}mm van de rand. Minimale afstand is ${min}mm.`,
+    holeTooFarFromEdge: isEn
+      ? (dist, max) =>
+          `Hole is ${dist}mm from the nearest edge. Maximum distance is ${max}mm.`
+      : (dist, max) =>
+          `Gat is ${dist}mm van de dichtstbijzijnde rand. Maximale afstand is ${max}mm.`,
     noShapeError: isEn
       ? "No shape defined. Please draw or upload a shape."
       : "Geen vorm gedefinieerd. Teken of upload een vorm.",
@@ -101,6 +117,9 @@ const DxfEditor = ({ lang, shapesText }) => {
 
   const { shapeList, isLoading, isError, mutate } = useShapeList();
   const { materialList, isLoading: isMaterialLoading } = useMaterialList();
+  const { drillingArea } = useDrillingArea();
+
+  console.log("drillingArea", drillingArea);
 
   const router = useRouter();
 
@@ -130,6 +149,12 @@ const DxfEditor = ({ lang, shapesText }) => {
   // Drilling Holes State
   const [drillingHoles, setDrillingHoles] = useState([]);
   const [isPlacingHole, setIsPlacingHole] = useState(false);
+
+  // ============= NEW: Hole Distance Constraint State =============
+  // minHoleDistance: hole must be at least this many mm from any edge
+  // maxHoleDistance: hole must be at most this many mm from the nearest edge
+  const [minHoleDistance, setMinHoleDistance] = useState(10); // 10mm default
+  const [maxHoleDistance, setMaxHoleDistance] = useState(null); // null = no max limit
 
   // Corner Settings State
   const [cornerSettings, setCornerSettings] = useState({});
@@ -782,6 +807,297 @@ const DxfEditor = ({ lang, shapesText }) => {
     );
   };
 
+  // ============= NEW: Distance from polygon edge calculation =============
+  /**
+   * Validates a hole position against distance constraints.
+   * Returns { valid: true } or { valid: false, reason: string }
+   */
+  const validateHolePosition = (pos) => {
+    // Must be inside a shape
+    const targetShape = shapes.find((shape) => {
+      if (!shape.closed || !shape.visible) return false;
+      return isPointInPolygon(pos, shape.points);
+    });
+
+    if (!targetShape) {
+      return { valid: false, reason: "outside" };
+    }
+
+    const distFromEdge = getDistanceFromPolygonEdge(pos, targetShape.points);
+
+    if (minHoleDistance > 0 && distFromEdge < minHoleDistance) {
+      return {
+        valid: false,
+        reason: "tooClose",
+        dist: Math.round(distFromEdge),
+        min: minHoleDistance,
+      };
+    }
+
+    if (maxHoleDistance !== null && distFromEdge > maxHoleDistance) {
+      return {
+        valid: false,
+        reason: "tooFar",
+        dist: Math.round(distFromEdge),
+        max: maxHoleDistance,
+      };
+    }
+
+    return { valid: true };
+  };
+
+  /**
+   * Called by MainCanvasArea while hole is being dragged (every move).
+   * Returns the corrected position — if invalid, snaps back to last valid position.
+   * We store last valid pos per hole id in a ref to avoid stale closure issues.
+   */
+  const holeDragValidRef = useRef({}); // { [holeId]: { x, y } }
+
+  const handleHoleDrag = (holeId, newPos) => {
+    const result = validateHolePosition(newPos);
+
+    if (result.valid) {
+      // Save as last known valid position
+      holeDragValidRef.current[holeId] = { ...newPos };
+      // Update position visually
+      setDrillingHoles((prev) =>
+        prev.map((h) => (h.id === holeId ? { ...h, x: newPos.x, y: newPos.y } : h)),
+      );
+      return newPos; // tell canvas: use this position
+    } else {
+      // Snap back to last valid position
+      const lastValid = holeDragValidRef.current[holeId];
+      if (lastValid) {
+        setDrillingHoles((prev) =>
+          prev.map((h) =>
+            h.id === holeId ? { ...h, x: lastValid.x, y: lastValid.y } : h,
+          ),
+        );
+        return lastValid; // tell canvas: snap to this
+      }
+      return newPos; // fallback — no saved pos yet
+    }
+  };
+
+  const handleHoleDragEnd = (holeId, finalPos) => {
+    const result = validateHolePosition(finalPos);
+
+    if (result.valid) {
+      holeDragValidRef.current[holeId] = { ...finalPos };
+      setDrillingHoles((prev) =>
+        prev.map((h) => (h.id === holeId ? { ...h, x: finalPos.x, y: finalPos.y } : h)),
+      );
+    } else {
+      // Revert to last valid position and show error
+      const lastValid = holeDragValidRef.current[holeId];
+      if (lastValid) {
+        setDrillingHoles((prev) =>
+          prev.map((h) =>
+            h.id === holeId ? { ...h, x: lastValid.x, y: lastValid.y } : h,
+          ),
+        );
+      }
+
+      if (result.reason === "outside") {
+        message.warning(txt.holeMustBeInside);
+      } else if (result.reason === "tooClose") {
+        message.warning(txt.holeTooCloseToEdge(result.dist, result.min));
+      } else if (result.reason === "tooFar") {
+        message.warning(txt.holeTooFarFromEdge(result.dist, result.max));
+      }
+    }
+  };
+
+  /**
+   * For each polygon edge, returns the closest point ON that segment to `point`,
+   * along with the distance.
+   */
+  const getClosestPointOnSegment = (point, a, b) => {
+    const abx = b[0] - a[0];
+    const aby = b[1] - a[1];
+    const abLenSq = abx * abx + aby * aby;
+
+    if (abLenSq === 0) {
+      return { x: a[0], y: a[1], dist: Math.hypot(point.x - a[0], point.y - a[1]) };
+    }
+
+    const t = Math.max(
+      0,
+      Math.min(1, ((point.x - a[0]) * abx + (point.y - a[1]) * aby) / abLenSq),
+    );
+
+    const cx = a[0] + t * abx;
+    const cy = a[1] + t * aby;
+    return { x: cx, y: cy, dist: Math.hypot(point.x - cx, point.y - cy) };
+  };
+
+  /**
+   * Calculates the minimum distance from a point to any polygon edge.
+   * Returns distance in mm (1 pixel = 1 mm).
+   */
+  const getDistanceFromPolygonEdge = (point, polygonPoints) => {
+    let minDist = Infinity;
+    const n = polygonPoints.length;
+    for (let i = 0; i < n; i++) {
+      const { dist } = getClosestPointOnSegment(
+        point,
+        polygonPoints[i],
+        polygonPoints[(i + 1) % n],
+      );
+      if (dist < minDist) minDist = dist;
+    }
+    return minDist;
+  };
+
+  /**
+   * Finds the nearest VALID hole position to `clickedPos` inside `shape`.
+   *
+   * Strategy:
+   * - If click is outside shape → project onto the nearest edge inward by minHoleDistance
+   * - If too close to edge (dist < min) → push inward along the click→centroid direction
+   *   until dist === minHoleDistance
+   * - If too far from edge (dist > max) → pull toward nearest edge until dist === maxHoleDistance
+   * - If already valid → return as-is
+   *
+   * Returns { x, y } of the snapped valid position, or null if no valid zone exists.
+   */
+  const findNearestValidPosition = (clickedPos, shape) => {
+    const pts = shape.points;
+    const n = pts.length;
+
+    // ---- helpers ----
+    const distToEdge = (p) => getDistanceFromPolygonEdge(p, pts);
+    const insideShape = (p) => isPointInPolygon(p, pts);
+
+    // Centroid of the shape
+    const cx = pts.reduce((s, p) => s + p[0], 0) / n;
+    const cy = pts.reduce((s, p) => s + p[1], 0) / n;
+    const centroid = { x: cx, y: cy };
+
+    // Direction from point toward centroid (unit vector)
+    const dirToCentroid = (p) => {
+      const dx = centroid.x - p.x;
+      const dy = centroid.y - p.y;
+      const len = Math.hypot(dx, dy);
+      if (len < 0.001) return { x: 0, y: 0 };
+      return { x: dx / len, y: dy / len };
+    };
+
+    // Direction from point AWAY from centroid (toward edge)
+    const dirToEdge = (p) => {
+      const d = dirToCentroid(p);
+      return { x: -d.x, y: -d.y };
+    };
+
+    // ---- 1. Click outside shape → find nearest edge point, then push inward ----
+    if (!insideShape(clickedPos)) {
+      // Find closest point on any edge
+      let bestEdgePt = null;
+      let bestDist = Infinity;
+      for (let i = 0; i < n; i++) {
+        const cp = getClosestPointOnSegment(clickedPos, pts[i], pts[(i + 1) % n]);
+        if (cp.dist < bestDist) {
+          bestDist = cp.dist;
+          bestEdgePt = cp;
+        }
+      }
+
+      // Push inward from that edge point toward centroid by minHoleDistance
+      const inwardDir = dirToCentroid({ x: bestEdgePt.x, y: bestEdgePt.y });
+      const target = minHoleDistance > 0
+        ? { x: bestEdgePt.x + inwardDir.x * minHoleDistance, y: bestEdgePt.y + inwardDir.y * minHoleDistance }
+        : { x: bestEdgePt.x + inwardDir.x * 1, y: bestEdgePt.y + inwardDir.y * 1 };
+
+      // Verify it's inside and satisfies constraints; if not, return centroid as fallback
+      if (insideShape(target)) {
+        const d = distToEdge(target);
+        if (
+          (minHoleDistance === 0 || d >= minHoleDistance - 0.5) &&
+          (maxHoleDistance === null || d <= maxHoleDistance + 0.5)
+        ) {
+          return target;
+        }
+      }
+      return centroid; // fallback
+    }
+
+    const currentDist = distToEdge(clickedPos);
+
+    // ---- 2. Already valid ----
+    if (
+      (minHoleDistance === 0 || currentDist >= minHoleDistance) &&
+      (maxHoleDistance === null || currentDist <= maxHoleDistance)
+    ) {
+      return clickedPos;
+    }
+
+    // ---- 3. Too close to edge → push toward centroid until dist === minHoleDistance ----
+    if (minHoleDistance > 0 && currentDist < minHoleDistance) {
+      // Binary search along click→centroid ray
+      const dir = dirToCentroid(clickedPos);
+      let lo = 0;
+      let hi = Math.hypot(centroid.x - clickedPos.x, centroid.y - clickedPos.y);
+
+      for (let iter = 0; iter < 50; iter++) {
+        const mid = (lo + hi) / 2;
+        const candidate = { x: clickedPos.x + dir.x * mid, y: clickedPos.y + dir.y * mid };
+        if (!insideShape(candidate)) { hi = mid; continue; }
+        const d = distToEdge(candidate);
+        if (d < minHoleDistance) lo = mid;
+        else hi = mid;
+      }
+
+      const snapped = {
+        x: clickedPos.x + dir.x * ((lo + hi) / 2),
+        y: clickedPos.y + dir.y * ((lo + hi) / 2),
+      };
+
+      // Also check it doesn't violate max
+      const snappedDist = distToEdge(snapped);
+      if (maxHoleDistance !== null && snappedDist > maxHoleDistance) {
+        return null; // no valid zone — very thin shape or contradictory constraints
+      }
+      return snapped;
+    }
+
+    // ---- 4. Too far from edge (dist > max) → pull toward nearest edge ----
+    if (maxHoleDistance !== null && currentDist > maxHoleDistance) {
+      // Find the closest point on any edge
+      let bestEdgePt = null;
+      let bestEdgeDist = Infinity;
+      for (let i = 0; i < n; i++) {
+        const cp = getClosestPointOnSegment(clickedPos, pts[i], pts[(i + 1) % n]);
+        if (cp.dist < bestEdgeDist) {
+          bestEdgeDist = cp.dist;
+          bestEdgePt = cp;
+        }
+      }
+
+      // Direction from clicked point toward nearest edge point
+      const dx = bestEdgePt.x - clickedPos.x;
+      const dy = bestEdgePt.y - clickedPos.y;
+      const len = Math.hypot(dx, dy);
+      const dir = { x: dx / len, y: dy / len };
+
+      // Move from clickedPos toward edge, stopping at maxHoleDistance from edge
+      // i.e. travel = currentDist - maxHoleDistance along dir
+      const travel = currentDist - maxHoleDistance;
+      const snapped = {
+        x: clickedPos.x + dir.x * travel,
+        y: clickedPos.y + dir.y * travel,
+      };
+
+      // Verify min constraint too
+      const snappedDist = distToEdge(snapped);
+      if (minHoleDistance > 0 && snappedDist < minHoleDistance) {
+        return null; // contradictory constraints
+      }
+      return snapped;
+    }
+
+    return clickedPos;
+  };
+
   // Handle stage click for placing drilling holes
   const handleStageClick = (e) => {
     if (!isPlacingHole) return;
@@ -791,22 +1107,51 @@ const DxfEditor = ({ lang, shapesText }) => {
     const transform = stage.getAbsoluteTransform().copy().invert();
     const relativePos = transform.point(pos);
 
-    // Check if click is inside any shape
-    const isInsideShape = shapes.some((shape) => {
+    // ---- Find the target shape (prefer the one that contains the click) ----
+    let targetShape = shapes.find((shape) => {
       if (!shape.closed || !shape.visible) return false;
       return isPointInPolygon(relativePos, shape.points);
     });
 
-    if (!isInsideShape) {
+    // If click is outside all shapes, find the nearest shape
+    if (!targetShape) {
+      let nearestShape = null;
+      let nearestDist = Infinity;
+      shapes.forEach((shape) => {
+        if (!shape.closed || !shape.visible) return;
+        const d = getDistanceFromPolygonEdge(relativePos, shape.points);
+        if (d < nearestDist) {
+          nearestDist = d;
+          nearestShape = shape;
+        }
+      });
+      targetShape = nearestShape;
+    }
+
+    if (!targetShape) {
       message.warning(txt.holeMustBeInside);
       return;
     }
 
+    // ---- Find nearest valid position (auto-snap) ----
+    const validPos = findNearestValidPosition(relativePos, targetShape);
+
+    if (!validPos) {
+      // Constraints are contradictory for this shape (e.g. min > max, or shape too small)
+      message.warning(
+        isEn
+          ? "No valid position found. Check distance constraints."
+          : "Geen geldige positie gevonden. Controleer de afstandsinstellingen.",
+      );
+      return;
+    }
+
+    // ---- Place the hole at the valid position ----
     const newHole = {
       id: `hole-${Date.now()}`,
-      x: relativePos.x,
-      y: relativePos.y,
-      diameter: 6, // Fixed 6mm diameter
+      x: validPos.x,
+      y: validPos.y,
+      diameter: 6,
     };
 
     setDrillingHoles([...drillingHoles, newHole]);
@@ -1182,6 +1527,11 @@ const DxfEditor = ({ lang, shapesText }) => {
               setDrillingHoles={setDrillingHoles}
               isPlacingHole={isPlacingHole}
               setIsPlacingHole={setIsPlacingHole}
+              // NEW: Pass hole distance constraints to sidebar
+              minHoleDistance={minHoleDistance}
+              setMinHoleDistance={setMinHoleDistance}
+              maxHoleDistance={maxHoleDistance}
+              setMaxHoleDistance={setMaxHoleDistance}
               selectedMaterial={selectedMaterial}
               setSelectedMaterial={setSelectedMaterial}
               selectedThickness={selectedThickness}
@@ -1233,6 +1583,8 @@ const DxfEditor = ({ lang, shapesText }) => {
                 handleMidpointDragEnd={handleMidpointDragEnd}
                 dragOffset={dragOffset}
                 setDrillingHoles={setDrillingHoles}
+                handleHoleDrag={handleHoleDrag}
+                handleHoleDragEnd={handleHoleDragEnd}
                 isPlacingHole={isPlacingHole}
                 roundByDragActive={roundByDragActive}
                 showMeasurements={showMeasurements}
