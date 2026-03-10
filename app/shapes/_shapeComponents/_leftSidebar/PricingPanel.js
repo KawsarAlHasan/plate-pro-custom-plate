@@ -238,7 +238,7 @@ function PricingPanel({
         </div>
 
         {/* Price Disclaimer */}
-        <Alert
+        {/* <Alert
           type="warning"
           title={isEn ? "Pricing Note" : "Prijs Opmerking"}
           description={
@@ -277,7 +277,7 @@ function PricingPanel({
           }
           showIcon
           icon={<InfoCircleOutlined />}
-        />
+        /> */}
 
         {/* Tags */}
         <div className="flex flex-wrap gap-1">

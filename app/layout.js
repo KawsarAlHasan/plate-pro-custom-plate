@@ -3,6 +3,7 @@ import Header from "./header";
 import Footer from "./footer";
 import { getDictionary } from "@/app/lib/i18n/getDictionary";
 import { cookies } from "next/headers";
+import Script from "next/script";
 
 export const metadata = {
   title: "Create Next App",
@@ -25,7 +26,12 @@ export default async function RootLayout({ children }) {
         <Footer dict={dict} />
       </body>
 
-      <script defer src="https://app.fastbots.ai/embed.js" data-bot-id="cmmk8igxz02d1pb1pwdjnbf2e"></script>
+      {/* <script defer src="https://app.fastbots.ai/embed.js" data-bot-id="cmmk8igxz02d1pb1pwdjnbf2e"></script> */}
+      <Script
+        src="https://app.fastbots.ai/embed.js"
+        strategy="afterInteractive"
+        data-bot-id="cmmk8igxz02d1pb1pwdjnbf2e"
+      />
     </html>
   );
 }

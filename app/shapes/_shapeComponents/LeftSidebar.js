@@ -9,6 +9,7 @@ import {
   Alert,
   InputNumber,
   message,
+  Tour,
 } from "antd";
 import {
   PlusOutlined,
@@ -33,6 +34,7 @@ import PricingPanel from "./_leftSidebar/PricingPanel";
 import DimensionInput from "./_leftSidebar/DimensionInput";
 import ValidationPanel from "./_leftSidebar/ValidationPanel";
 import { showToast } from "nextjs-toast-notify";
+import { useRef, useState } from "react";
 
 function LeftSidebar({
   lang,
@@ -113,6 +115,24 @@ function LeftSidebar({
 }) {
   const isEn = lang === "en";
 
+  const [open, setOpen] = useState(true);
+
+  const ref1 = useRef(null);
+  const ref2 = useRef(null);
+
+  const steps = [
+    // {
+    //   title: "Move Shape",
+    //   description: "Move Shape (Drag entire shape)",
+    //   target: () => ref1.current,
+    // },
+    // {
+    //   title: "Select Point",
+    //   description: "Select Point (Click on points)",
+    //   target: () => ref2.current,
+    // },
+  ];
+
   const toggleShapeLock = (check) => {
     const updatedShapes = shapes.map((shape) =>
       shape.id ? { ...shape, locked: check } : shape,
@@ -168,7 +188,8 @@ function LeftSidebar({
 
     // when user goes back to step 1, unlock the shape
     if (currentStep === 2) {
-      toggleShapeLock(false);
+      setDrillingHoles([]); // reset holes
+      toggleShapeLock(false); // unlock shape
     } else if (currentStep === 3) {
       setGridVisible(true);
     }
@@ -182,6 +203,8 @@ function LeftSidebar({
           : "col-span-3 space-y-4 overflow-y-auto"
       }
     >
+      <Tour open={open} onClose={() => setOpen(false)} steps={steps} />
+
       {/* Toggle Button */}
       <div className="mb-1">
         <Button
@@ -224,6 +247,7 @@ function LeftSidebar({
                       icon={<DragOutlined />}
                       onClick={() => setToolMode("select")}
                       style={{ height: 40 }}
+                      ref={ref1}
                     >
                       {shapesText?.move}
                     </Button>
@@ -234,6 +258,7 @@ function LeftSidebar({
                       icon={<AimOutlined />}
                       onClick={() => setToolMode("select-point")}
                       style={{ height: 40 }}
+                      ref={ref2}
                     >
                       {shapesText?.point}
                     </Button>
@@ -485,11 +510,11 @@ function LeftSidebar({
         {/* Step 4: Review & Pricing */}
         {currentStep === 4 && (
           <>
-            <ValidationPanel
+            {/* <ValidationPanel
               lang={lang}
               validationErrors={validationErrors}
               validateOrder={validateOrder}
-            />
+            /> */}
             <PricingPanel
               lang={lang}
               totalArea={totalArea}
@@ -506,7 +531,7 @@ function LeftSidebar({
         )}
 
         {/* Shape Properties */}
-        {selectedShape && currentStep === 1 && (
+        {/* {selectedShape && currentStep === 1 && (
           <ShapeProperties
             shapes={shapes}
             selectedShape={selectedShape}
@@ -514,10 +539,10 @@ function LeftSidebar({
             setSelectedShape={setSelectedShape}
             setSelectedPoint={setSelectedPoint}
           />
-        )}
+        )} */}
 
         {/* Settings */}
-        {currentStep === 1 && (
+        {/* {currentStep === 1 && (
           <Settings
             lang={lang}
             gridSize={gridSize}
@@ -529,7 +554,7 @@ function LeftSidebar({
             showMeasurements={showMeasurements}
             setShowMeasurements={setShowMeasurements}
           />
-        )}
+        )} */}
 
         {/* Navigation Buttons */}
         <Card size="small" className="shadow-md">

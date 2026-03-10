@@ -40,12 +40,12 @@ function StepIndicator({
           {[1, 2, 3, 4].map((step) => (
             <div
               key={step}
-              className={`flex flex-col items-center cursor-pointer transition-all duration-300 ${
+              className={`flex flex-col items-center transition-all duration-300 ${ // cursor-pointer
                 currentStep === step
                   ? "scale-110"
                   : "opacity-80 hover:opacity-100"
               }`}
-              onClick={() => handleStepClick(step)}
+              // onClick={() => handleStepClick(step)}
             >
               <div
                 className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shadow-md transition-all duration-300 ${
