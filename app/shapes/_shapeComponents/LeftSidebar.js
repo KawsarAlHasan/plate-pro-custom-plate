@@ -41,6 +41,7 @@ import {
 } from "../../lib/steps/TourSteps";
 import CookiesCheck from "../../_component/CookiesCheck";
 import Cookies from "js-cookie";
+import { useRouter } from "next/navigation";
 
 function LeftSidebar({
   lang,
@@ -120,6 +121,8 @@ function LeftSidebar({
   handleSubmitOrder,
 }) {
   const isEn = lang === "en";
+
+  const router = useRouter();
 
   const [open, setOpen] = useState(false);
   const [moveIncrementopen, setMoveIncrementOpen] = useState(false);
@@ -240,6 +243,20 @@ function LeftSidebar({
     Cookies.set("point", true, { expires: 365 });
   };
 
+  const handleRemoveCookies = () => {
+    if (currentStep === 1) {
+      Cookies.remove("shape");
+      Cookies.remove("point");
+    } else if (currentStep === 2) {
+      Cookies.remove("holes");
+    } else if (currentStep === 3) {
+      Cookies.remove("material");
+      Cookies.remove("thickness");
+    }
+    // reload the page
+    router.refresh();
+  };
+
   return (
     <div
       className={
@@ -256,8 +273,9 @@ function LeftSidebar({
       />
 
       {/* Toggle Button */}
-      <div className="mb-1" ref={ref1}>
+      <div className="mb-1 flex justify-between">
         <Button
+          ref={ref1}
           type={showShapeTemplate ? "primary" : "default"}
           icon={showShapeTemplate ? <CloseOutlined /> : <AppstoreOutlined />}
           onClick={() => setShowShapeTemplate(!showShapeTemplate)}
@@ -266,6 +284,10 @@ function LeftSidebar({
           {showShapeTemplate
             ? shapesText?.hideTemplates
             : shapesText?.showTemplates}
+        </Button>
+
+        <Button type="default" onClick={() => handleRemoveCookies()}>
+          Show Instructions
         </Button>
       </div>
 
