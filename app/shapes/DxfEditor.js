@@ -135,7 +135,7 @@ const DxfEditor = ({ lang, shapesText }) => {
   const [totalPerimeter, setTotalPerimeter] = useState(0);
   const [scale, setScale] = useState(1);
   const [gridVisible, setGridVisible] = useState(true);
-  const [snapToGrid, setSnapToGrid] = useState(true);
+  const [snapToGrid, setSnapToGrid] = useState(false);   // New state
   const [showMeasurements, setShowMeasurements] = useState(true);
   const [stageSize, setStageSize] = useState({ width: 1200, height: 800 });
   const [toolMode, setToolMode] = useState("select");

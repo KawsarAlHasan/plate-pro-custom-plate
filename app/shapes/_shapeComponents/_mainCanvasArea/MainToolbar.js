@@ -5,8 +5,12 @@ import {
   ZoomInOutlined,
   ZoomOutOutlined,
 } from "@ant-design/icons";
-import { Button, Divider, Statistic, Tooltip } from "antd";
+import { Button, Divider, Statistic, Tooltip, Tour } from "antd";
 import { showToast } from "nextjs-toast-notify";
+import { useEffect, useRef, useState } from "react";
+import { getCanvasTourSteps } from "../../../lib/steps/TourSteps";
+import CookiesCheck from "../../../_component/CookiesCheck";
+import Cookies from "js-cookie";
 
 function MainToolbar({
   lang,
@@ -37,6 +41,33 @@ function MainToolbar({
     totalArea: isEn ? "Total Area" : "Totaal oppervlak",
   };
 
+  const [tourOpen, setTourOpen] = useState(false);
+
+  const isCanvas = CookiesCheck("canvas") ? false : true;
+  const isShape = CookiesCheck("shape");
+
+  useEffect(() => {
+    if (isCanvas && isShape) {
+      setTourOpen(true);
+    }
+  }, [isCanvas, isShape]);
+
+  const refUndo = useRef(null);
+  const refRedo = useRef(null);
+  const refZoomIn = useRef(null);
+  const refZoomOut = useRef(null);
+  const refResetZoom = useRef(null);
+  const refArea = useRef(null);
+
+  const tourSteps = getCanvasTourSteps(isEn, {
+    refUndo,
+    refRedo,
+    refZoomIn,
+    refZoomOut,
+    refResetZoom,
+    refArea,
+  });
+
   // Undo/Redo System
   const handleUndo = () => {
     if (historyIndex > 0) {
@@ -62,11 +93,22 @@ function MainToolbar({
     }
   };
 
+  const handleTourClose = () => {
+    setTourOpen(false);
+    Cookies.set("canvas", true, { expires: 365 });
+  };
+
   return (
     <div className="flex flex-wrap items-center justify-between mb-4 gap-3 p-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg">
+      <Tour
+        open={tourOpen}
+        onClose={() => handleTourClose()}
+        steps={tourSteps}
+      />
       <div className="flex items-center gap-2 flex-wrap">
         <Tooltip title={t?.undo}>
           <Button
+            ref={refUndo}
             icon={<UndoOutlined />}
             onClick={handleUndo}
             disabled={historyIndex <= 0}
@@ -75,6 +117,7 @@ function MainToolbar({
         </Tooltip>
         <Tooltip title={t?.redo}>
           <Button
+            ref={refRedo}
             icon={<RedoOutlined />}
             onClick={handleRedo}
             disabled={historyIndex >= history?.length - 1}
@@ -86,6 +129,7 @@ function MainToolbar({
 
         <Tooltip title={t?.zoomIn}>
           <Button
+            ref={refZoomIn}
             icon={<ZoomInOutlined />}
             onClick={() => setScale(Math.min(5, scale * 1.2))}
             size="large"
@@ -93,12 +137,18 @@ function MainToolbar({
         </Tooltip>
         <Tooltip title={t?.zoomOut}>
           <Button
+            ref={refZoomOut}
             icon={<ZoomOutOutlined />}
             onClick={() => setScale(Math.max(0.05, scale / 1.2))}
             size="large"
           />
         </Tooltip>
-        <Button onClick={() => setScale(1)} size="large" disabled={scale === 1}>
+        <Button
+          ref={refResetZoom}
+          onClick={() => setScale(1)}
+          size="large"
+          disabled={scale === 1}
+        >
           {t?.resetZoom}
         </Button>
         <span className="text-sm font-medium px-2 py-1 bg-white rounded">
@@ -114,12 +164,15 @@ function MainToolbar({
       </div>
 
       <div className="flex items-center gap-4">
-        <Statistic
-          title={t?.totalArea}
-          value={totalArea?.toFixed(2)}
-          suffix="sq m"
-          style={{ fontSize: "16px", color: "#1890ff" }}
-        />
+        <div ref={refArea}>
+          <Statistic
+            title={t?.totalArea}
+            value={totalArea?.toFixed(2)}
+            suffix="sq m"
+            style={{ fontSize: "16px", color: "#1890ff" }}
+          />
+        </div>
+
         {/* <Statistic
           title="Perimeter"
           value={totalPerimeter?.toFixed(2)}

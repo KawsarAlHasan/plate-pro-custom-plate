@@ -1,6 +1,13 @@
 "use client";
-import { Card, Button, Space, Select, Divider, Radio, Spin } from "antd";
+import { Card, Button, Space, Select, Divider, Radio, Spin, Tour } from "antd";
 import { CheckCircleOutlined, LoadingOutlined } from "@ant-design/icons";
+import { useEffect, useRef, useState } from "react";
+import {
+  getMaterialThecknessTourSteps,
+  getMaterialTourSteps,
+} from "../../../lib/steps/TourSteps";
+import CookiesCheck from "../../../_component/CookiesCheck";
+import Cookies from "js-cookie";
 
 const { Option } = Select;
 
@@ -19,6 +26,36 @@ function MaterialSelector({
   isMaterialLoading,
 }) {
   const isEn = lang === "en";
+  const [tourOpen, setTourOpen] = useState(false);
+  const [tourThicknessOpen, setTourThicknessOpen] = useState(false);
+
+  const isMaterial = CookiesCheck("material") ? false : true;
+  const isThickness = CookiesCheck("thickness") ? false : true;
+
+  useEffect(() => {
+    if (isMaterial) {
+      setTourOpen(true);
+    }
+
+    if (selectedMaterial && isThickness) {
+      setTourThicknessOpen(true);
+    }
+  }, [isMaterial, isThickness, selectedMaterial]);
+
+  const refMaterial = useRef(null);
+  const refThickness = useRef(null);
+  const refColor = useRef(null);
+  const refFinish = useRef(null);
+
+  const tourSteps = getMaterialTourSteps(isEn, {
+    refMaterial,
+    refColor,
+    refFinish,
+  });
+
+  const tourThicknessSteps = getMaterialThecknessTourSteps(isEn, {
+    refThickness,
+  });
 
   // Standard Colors
   const standardColors = [
@@ -92,15 +129,36 @@ function MaterialSelector({
     );
   }
 
+  const handleTourClose = () => {
+    setTourOpen(false);
+    Cookies.set("material", true, { expires: 365 });
+  };
+
+  const handleThicknessClose = () => {
+    setTourThicknessOpen(false);
+    Cookies.set("thickness", true, { expires: 365 });
+  };
+
   return (
     <Card
       title={`🎨 ${materialText?.mainTitle}`}
       size="small"
       className="shadow-md"
     >
+      <Tour
+        open={tourOpen}
+        onClose={() => handleTourClose()}
+        steps={tourSteps}
+      />
+      <Tour
+        open={tourThicknessOpen}
+        onClose={() => handleThicknessClose()}
+        steps={tourThicknessSteps}
+      />
+
       <Space orientation="vertical" className="w-full" size="middle">
         {/* Material Selection */}
-        <div>
+        <div ref={refMaterial}>
           <div className="text-sm font-medium mb-2">
             {materialText?.selectMaterial}
           </div>
@@ -146,7 +204,7 @@ function MaterialSelector({
 
         {/* Thickness/Variant Selection - Show only if material is selected and has variants */}
         {selectedMaterial && availableVariants.length > 0 && (
-          <div>
+          <div ref={refThickness}>
             <Divider style={{ margin: "8px 0" }} />
             <div className="text-sm font-medium mb-2">
               {materialText?.selectThickness}
@@ -182,7 +240,7 @@ function MaterialSelector({
         <Divider style={{ margin: "8px 0" }} />
 
         {/* Color Selection */}
-        <div>
+        <div ref={refColor}>
           <div className="text-sm font-medium mb-2">
             {materialText?.selectColor}
           </div>
@@ -217,7 +275,7 @@ function MaterialSelector({
         <Divider style={{ margin: "8px 0" }} />
 
         {/* Finish Selection */}
-        <div>
+        <div ref={refFinish}>
           <div className="text-sm font-medium mb-2">
             {materialText?.selectFinish}
           </div>

@@ -13,6 +13,7 @@ import {
   Badge,
   Switch,
   Tooltip,
+  Tour,
 } from "antd";
 import {
   PlusOutlined,
@@ -20,7 +21,10 @@ import {
   AimOutlined,
   InfoCircleOutlined,
 } from "@ant-design/icons";
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { getHolesTourSteps } from "../../../lib/steps/TourSteps";
+import CookiesCheck from "../../../_component/CookiesCheck";
+import Cookies from "js-cookie";
 
 function DrillingHoles({
   lang,
@@ -39,11 +43,26 @@ function DrillingHoles({
   const [editX, setEditX] = useState(0);
   const [editY, setEditY] = useState(0);
   const [maxEnabled, setMaxEnabled] = useState(maxHoleDistance !== null);
+  const [tourOpen, setTourOpen] = useState(false);
+
+  const isHoles = CookiesCheck("holes") ? false : true;
+
+  useEffect(() => {
+    if (isHoles) {
+      setTourOpen(true);
+    }
+  }, [isHoles]);
+
+  const refAddBtn = useRef(null);
 
   const isEn = lang === "en";
 
   const HOLE_DIAMETER = 6; // Fixed 6mm diameter
   const MIN_HOLES = 2;
+
+  const tourSteps = getHolesTourSteps(isEn, {
+    refAddBtn,
+  });
 
   // Start placing hole
   const startPlacingHole = () => {
@@ -68,7 +87,6 @@ function DrillingHoles({
     setEditingHole(null);
     message.success(holesText?.holePositionUpdated);
   };
-
 
   const columns = [
     {
@@ -119,6 +137,11 @@ function DrillingHoles({
   const holesNeeded = MIN_HOLES - drillingHoles.length;
   const isValid = drillingHoles.length >= MIN_HOLES;
 
+  const handleTourClose = () => {
+    setTourOpen(false);
+    Cookies.set("holes", true, { expires: 365 });
+  };
+
   return (
     <Card
       title={
@@ -133,22 +156,30 @@ function DrillingHoles({
       size="small"
       className="shadow-md"
     >
+      <Tour
+        open={tourOpen}
+        onClose={() => handleTourClose()}
+        steps={tourSteps}
+      />
+
       <Space orientation="vertical" className="w-full" size="small">
         {/* Status Alert */}
-        {!isValid ? (
-          <Alert
-            type="warning"
-            title={
-              isEn
-                ? `${holesNeeded} more hole${holesNeeded > 1 ? "s" : ""} required`
-                : `Nog ${holesNeeded} gat${holesNeeded > 1 ? "en" : ""} nodig`
-            }
-            description={holesText?.warningMessage}
-            showIcon
-          />
-        ) : (
-          <Alert type="success" title={holesText?.successMessage} showIcon />
-        )}
+        <div>
+          {!isValid ? (
+            <Alert
+              type="warning"
+              title={
+                isEn
+                  ? `${holesNeeded} more hole${holesNeeded > 1 ? "s" : ""} required`
+                  : `Nog ${holesNeeded} gat${holesNeeded > 1 ? "en" : ""} nodig`
+              }
+              description={holesText?.warningMessage}
+              showIcon
+            />
+          ) : (
+            <Alert type="success" title={holesText?.successMessage} showIcon />
+          )}
+        </div>
 
         {/* Hole Specifications */}
         <div className="bg-blue-50 p-3 rounded-lg">
@@ -215,6 +246,7 @@ function DrillingHoles({
           size="large"
           disabled={isPlacingHole}
           className={isPlacingHole ? "animate-pulse" : ""}
+          ref={refAddBtn}
         >
           {isPlacingHole
             ? holesText?.addingLoading
@@ -237,20 +269,22 @@ function DrillingHoles({
         <Divider style={{ margin: "8px 0" }}>{holesText?.placedHoles}</Divider>
 
         {/* Holes Table */}
-        {drillingHoles.length > 0 ? (
-          <Table
-            dataSource={drillingHoles.map((h) => ({ ...h, key: h.id }))}
-            columns={columns}
-            size="small"
-            pagination={false}
-            scroll={{ y: 200 }}
-          />
-        ) : (
-          <div className="text-center text-gray-400 py-4">
-            <AimOutlined style={{ fontSize: 32 }} />
-            <div className="mt-2">{holesText?.noHoles}</div>
-          </div>
-        )}
+        <div>
+          {drillingHoles.length > 0 ? (
+            <Table
+              dataSource={drillingHoles.map((h) => ({ ...h, key: h.id }))}
+              columns={columns}
+              size="small"
+              pagination={false}
+              scroll={{ y: 200 }}
+            />
+          ) : (
+            <div className="text-center text-gray-400 py-4">
+              <AimOutlined style={{ fontSize: 32 }} />
+              <div className="mt-2">{holesText?.noHoles}</div>
+            </div>
+          )}
+        </div>
       </Space>
     </Card>
   );

@@ -34,7 +34,13 @@ import PricingPanel from "./_leftSidebar/PricingPanel";
 import DimensionInput from "./_leftSidebar/DimensionInput";
 import ValidationPanel from "./_leftSidebar/ValidationPanel";
 import { showToast } from "nextjs-toast-notify";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import {
+  getMoveIncrementTourSteps,
+  getShapeTourSteps,
+} from "../../lib/steps/TourSteps";
+import CookiesCheck from "../../_component/CookiesCheck";
+import Cookies from "js-cookie";
 
 function LeftSidebar({
   lang,
@@ -115,23 +121,52 @@ function LeftSidebar({
 }) {
   const isEn = lang === "en";
 
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
+  const [moveIncrementopen, setMoveIncrementOpen] = useState(false);
+
+  const isShape = CookiesCheck("shape") ? false : true;
+  const isPoint = CookiesCheck("point") ? false : true;
+
+  useEffect(() => {
+    if (isShape) {
+      setOpen(true);
+    }
+
+    if (selectedPoint && isPoint) {
+      setMoveIncrementOpen(true);
+    }
+  }, [isShape, isPoint, selectedPoint]);
 
   const ref1 = useRef(null);
   const ref2 = useRef(null);
+  const ref3 = useRef(null);
+  const ref4 = useRef(null);
+  const ref5 = useRef(null);
+  const ref6 = useRef(null);
+  const ref7 = useRef(null);
+  const ref8 = useRef(null);
+  const ref9 = useRef(null);
+  const ref10 = useRef(null);
+  const ref11 = useRef(null);
+  const ref12 = useRef(null);
 
-  const steps = [
-    // {
-    //   title: "Move Shape",
-    //   description: "Move Shape (Drag entire shape)",
-    //   target: () => ref1.current,
-    // },
-    // {
-    //   title: "Select Point",
-    //   description: "Select Point (Click on points)",
-    //   target: () => ref2.current,
-    // },
-  ];
+  const steps = getShapeTourSteps(isEn, {
+    ref1,
+    ref2,
+    ref3,
+    ref4,
+    ref5,
+    ref6,
+    ref7,
+    ref11,
+    ref12,
+  });
+
+  const moveIncrementsteps = getMoveIncrementTourSteps(isEn, {
+    ref8,
+    ref9,
+    ref10,
+  });
 
   const toggleShapeLock = (check) => {
     const updatedShapes = shapes.map((shape) =>
@@ -195,6 +230,16 @@ function LeftSidebar({
     }
   };
 
+  const handleTourClose = () => {
+    setOpen(false);
+    Cookies.set("shape", true, { expires: 365 });
+  };
+
+  const handleMoveIncrementClose = () => {
+    setMoveIncrementOpen(false);
+    Cookies.set("point", true, { expires: 365 });
+  };
+
   return (
     <div
       className={
@@ -203,10 +248,15 @@ function LeftSidebar({
           : "col-span-3 space-y-4 overflow-y-auto"
       }
     >
-      <Tour open={open} onClose={() => setOpen(false)} steps={steps} />
+      <Tour open={open} onClose={() => handleTourClose()} steps={steps} />
+      <Tour
+        open={moveIncrementopen}
+        onClose={() => handleMoveIncrementClose()}
+        steps={moveIncrementsteps}
+      />
 
       {/* Toggle Button */}
-      <div className="mb-1">
+      <div className="mb-1" ref={ref1}>
         <Button
           type={showShapeTemplate ? "primary" : "default"}
           icon={showShapeTemplate ? <CloseOutlined /> : <AppstoreOutlined />}
@@ -247,7 +297,7 @@ function LeftSidebar({
                       icon={<DragOutlined />}
                       onClick={() => setToolMode("select")}
                       style={{ height: 40 }}
-                      ref={ref1}
+                      ref={ref2}
                     >
                       {shapesText?.move}
                     </Button>
@@ -258,7 +308,7 @@ function LeftSidebar({
                       icon={<AimOutlined />}
                       onClick={() => setToolMode("select-point")}
                       style={{ height: 40 }}
-                      ref={ref2}
+                      ref={ref3}
                     >
                       {shapesText?.point}
                     </Button>
@@ -269,6 +319,7 @@ function LeftSidebar({
                       icon={<PlusOutlined />}
                       onClick={() => setToolMode("add-point")}
                       style={{ height: 40 }}
+                      ref={ref4}
                     >
                       {shapesText?.add}
                     </Button>
@@ -279,6 +330,7 @@ function LeftSidebar({
                       icon={<DeleteOutlined />}
                       onClick={() => setToolMode("delete-point")}
                       style={{ height: 40 }}
+                      ref={ref5}
                     >
                       {shapesText?.delete}
                     </Button>
@@ -303,6 +355,7 @@ function LeftSidebar({
                     onClick={toggleRoundByDrag}
                     block
                     style={{ height: 40 }}
+                    ref={ref6}
                   >
                     {shapesText?.roundByDrag}
                   </Button>
@@ -313,6 +366,7 @@ function LeftSidebar({
                   onClick={autoSquare}
                   block
                   style={{ height: 40 }}
+                  ref={ref7}
                 >
                   {shapesText?.autoSquare}
                 </Button>
@@ -356,7 +410,7 @@ function LeftSidebar({
                     showIcon
                   />
 
-                  <div>
+                  <div ref={ref8}>
                     <label className="block text-sm font-medium mb-2">
                       {shapesText?.moveIncrement}: {moveIncrement}"
                     </label>
@@ -370,7 +424,7 @@ function LeftSidebar({
                     />
                   </div>
 
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-3 gap-2" ref={ref9}>
                     <div></div>
                     <Button
                       type="primary"
@@ -434,7 +488,7 @@ function LeftSidebar({
                     <div></div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 mt-2">
+                  <div className="grid grid-cols-2 gap-2 mt-2" ref={ref10}>
                     <Button
                       onClick={() => setSelectedPoint(null)}
                       block
@@ -461,14 +515,16 @@ function LeftSidebar({
               </Card>
             )}
 
-            <DimensionInput
-              lang={lang}
-              shapeText={shapesText?.shape}
-              shapes={shapes}
-              updateShapes={updateShapes}
-              unit={unit}
-              setUnit={setUnit}
-            />
+            <div ref={ref11}>
+              <DimensionInput
+                lang={lang}
+                shapeText={shapesText?.shape}
+                shapes={shapes}
+                updateShapes={updateShapes}
+                unit={unit}
+                setUnit={setUnit}
+              />
+            </div>
           </>
         )}
 
@@ -557,7 +613,7 @@ function LeftSidebar({
         )} */}
 
         {/* Navigation Buttons */}
-        <Card size="small" className="shadow-md">
+        <Card size="small" className="shadow-md" ref={ref12}>
           <div className="flex gap-2">
             {currentStep > 1 && (
               <Button onClick={handlePrevStep} block size="large">
