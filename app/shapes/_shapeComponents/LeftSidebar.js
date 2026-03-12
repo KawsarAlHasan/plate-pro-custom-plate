@@ -1,4 +1,3 @@
-// LeftSidebar.js
 "use client";
 import {
   Button,
@@ -41,7 +40,6 @@ import {
 } from "../../lib/steps/TourSteps";
 import CookiesCheck from "../../_component/CookiesCheck";
 import Cookies from "js-cookie";
-import { useRouter } from "next/navigation";
 
 function LeftSidebar({
   lang,
@@ -119,20 +117,30 @@ function LeftSidebar({
   materialList,
   isMaterialLoading,
   handleSubmitOrder,
+
+  /* Tour */
+  shapeTourOpen,
+  setShapeTourOpen,
+  moveIncrementopen,
+  setMoveIncrementOpen,
+  mainToolTourOpen,
+  setMainToolTourOpen,
+  holeTourOpen,
+  setHoleTourOpen,
+  materialTourOpen,
+  setMaterialTourOpen,
+  tourThicknessOpen,
+  setTourThicknessOpen,
 }) {
   const isEn = lang === "en";
 
-  const router = useRouter();
-
-  const [open, setOpen] = useState(false);
-  const [moveIncrementopen, setMoveIncrementOpen] = useState(false);
-
   const isShape = CookiesCheck("shape") ? false : true;
   const isPoint = CookiesCheck("point") ? false : true;
+  const isCanvas = CookiesCheck("canvas") ? false : true;
 
   useEffect(() => {
     if (isShape) {
-      setOpen(true);
+      setShapeTourOpen(true);
     }
 
     if (selectedPoint && isPoint) {
@@ -234,8 +242,12 @@ function LeftSidebar({
   };
 
   const handleTourClose = () => {
-    setOpen(false);
+    setShapeTourOpen(false);
     Cookies.set("shape", true, { expires: 365 });
+
+    if (isCanvas) {
+      setMainToolTourOpen(true);
+    }
   };
 
   const handleMoveIncrementClose = () => {
@@ -247,14 +259,16 @@ function LeftSidebar({
     if (currentStep === 1) {
       Cookies.remove("shape");
       Cookies.remove("point");
+      Cookies.remove("canvas");
+      setShapeTourOpen(true);
     } else if (currentStep === 2) {
       Cookies.remove("holes");
+      setHoleTourOpen(true);
     } else if (currentStep === 3) {
       Cookies.remove("material");
       Cookies.remove("thickness");
+      setMaterialTourOpen(true);
     }
-    // reload the page
-    router.refresh();
   };
 
   return (
@@ -265,7 +279,11 @@ function LeftSidebar({
           : "col-span-3 space-y-4 overflow-y-auto"
       }
     >
-      <Tour open={open} onClose={() => handleTourClose()} steps={steps} />
+      <Tour
+        open={shapeTourOpen}
+        onClose={() => handleTourClose()}
+        steps={steps}
+      />
       <Tour
         open={moveIncrementopen}
         onClose={() => handleMoveIncrementClose()}
@@ -564,6 +582,8 @@ function LeftSidebar({
             // NEW: Pass distance constraints through
             minHoleDistance={minHoleDistance}
             maxHoleDistance={maxHoleDistance}
+            holeTourOpen={holeTourOpen}
+            setHoleTourOpen={setHoleTourOpen}
           />
         )}
 
@@ -582,6 +602,10 @@ function LeftSidebar({
             setSelectedFinish={setSelectedFinish}
             materialList={materialList}
             isMaterialLoading={isMaterialLoading}
+            materialTourOpen={materialTourOpen}
+            setMaterialTourOpen={setMaterialTourOpen}
+            tourThicknessOpen={tourThicknessOpen}
+            setTourThicknessOpen={setTourThicknessOpen}
           />
         )}
 
