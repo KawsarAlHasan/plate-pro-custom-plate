@@ -100,7 +100,7 @@ function Orders({ ordersText }) {
       key: "price",
       render: (price) => (
         <Text strong className="text-green-600 text-lg">
-          ${parseFloat(price).toLocaleString()}
+          	€{parseFloat(price).toLocaleString()}
         </Text>
       ),
       width: 150,
@@ -191,7 +191,7 @@ function Orders({ ordersText }) {
                   {ordersText?.totalSpent}
                 </Text>
                 <Title level={3} className="!mb-0 !mt-1 text-green-600">
-                  $
+                  €
                   {orderList
                     ?.reduce(
                       (sum, order) => sum + parseFloat(order.total_price),
@@ -287,7 +287,7 @@ function Orders({ ordersText }) {
               </Descriptions.Item>
               <Descriptions.Item label={ordersText?.totalPrice} span={2}>
                 <Text strong className="text-green-600 text-lg">
-                  ${parseFloat(selectedOrder.total_price).toLocaleString()}
+                  €{parseFloat(selectedOrder.total_price).toLocaleString()}
                 </Text>
               </Descriptions.Item>
               <Descriptions.Item label={ordersText?.orderDate} span={2}>

@@ -54,6 +54,10 @@ function MainCanvasArea({
   moveIncrement,
   drillingHoles,
   unit,
+
+  // tour
+  mainToolTourOpen,
+  setMainToolTourOpen,
 }) {
   const isEn = lang === "en";
 
@@ -292,6 +296,8 @@ function MainCanvasArea({
           totalArea={totalArea}
           totalPerimeter={totalPerimeter}
           calculateMeasurements={calculateMeasurements}
+          mainToolTourOpen={mainToolTourOpen}
+          setMainToolTourOpen={setMainToolTourOpen}
         />
 
         <div
