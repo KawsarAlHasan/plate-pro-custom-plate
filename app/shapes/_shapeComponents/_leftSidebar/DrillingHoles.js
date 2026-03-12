@@ -38,18 +38,19 @@ function DrillingHoles({
   // NEW: Distance constraint props
   minHoleDistance,
   maxHoleDistance,
+  holeTourOpen,
+  setHoleTourOpen,
 }) {
   const [editingHole, setEditingHole] = useState(null);
   const [editX, setEditX] = useState(0);
   const [editY, setEditY] = useState(0);
   const [maxEnabled, setMaxEnabled] = useState(maxHoleDistance !== null);
-  const [tourOpen, setTourOpen] = useState(false);
 
   const isHoles = CookiesCheck("holes") ? false : true;
 
   useEffect(() => {
     if (isHoles) {
-      setTourOpen(true);
+      setHoleTourOpen(true);
     }
   }, [isHoles]);
 
@@ -138,7 +139,7 @@ function DrillingHoles({
   const isValid = drillingHoles.length >= MIN_HOLES;
 
   const handleTourClose = () => {
-    setTourOpen(false);
+    setHoleTourOpen(false);
     Cookies.set("holes", true, { expires: 365 });
   };
 
@@ -157,7 +158,7 @@ function DrillingHoles({
       className="shadow-md"
     >
       <Tour
-        open={tourOpen}
+        open={holeTourOpen}
         onClose={() => handleTourClose()}
         steps={tourSteps}
       />

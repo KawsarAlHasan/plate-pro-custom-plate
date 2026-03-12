@@ -24,6 +24,8 @@ function MainToolbar({
   totalArea,
   totalPerimeter,
   calculateMeasurements,
+  mainToolTourOpen,
+  setMainToolTourOpen,
 }) {
   const isEn = lang === "en";
 
@@ -40,17 +42,6 @@ function MainToolbar({
     shapes: isEn ? "shapes" : "vormen",
     totalArea: isEn ? "Total Area" : "Totaal oppervlak",
   };
-
-  const [tourOpen, setTourOpen] = useState(false);
-
-  const isCanvas = CookiesCheck("canvas") ? false : true;
-  const isShape = CookiesCheck("shape");
-
-  useEffect(() => {
-    if (isCanvas && isShape) {
-      setTourOpen(true);
-    }
-  }, [isCanvas, isShape]);
 
   const refUndo = useRef(null);
   const refRedo = useRef(null);
@@ -94,14 +85,14 @@ function MainToolbar({
   };
 
   const handleTourClose = () => {
-    setTourOpen(false);
+    setMainToolTourOpen(false);
     Cookies.set("canvas", true, { expires: 365 });
   };
 
   return (
     <div className="flex flex-wrap items-center justify-between mb-4 gap-3 p-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg">
       <Tour
-        open={tourOpen}
+        open={mainToolTourOpen}
         onClose={() => handleTourClose()}
         steps={tourSteps}
       />
