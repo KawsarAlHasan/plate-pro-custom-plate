@@ -24,17 +24,19 @@ function MaterialSelector({
   setSelectedFinish,
   materialList,
   isMaterialLoading,
+  materialTourOpen,
+  setMaterialTourOpen,
+  tourThicknessOpen,
+  setTourThicknessOpen,
 }) {
   const isEn = lang === "en";
-  const [tourOpen, setTourOpen] = useState(false);
-  const [tourThicknessOpen, setTourThicknessOpen] = useState(false);
 
   const isMaterial = CookiesCheck("material") ? false : true;
   const isThickness = CookiesCheck("thickness") ? false : true;
 
   useEffect(() => {
     if (isMaterial) {
-      setTourOpen(true);
+      setMaterialTourOpen(true);
     }
 
     if (selectedMaterial && isThickness) {
@@ -130,7 +132,7 @@ function MaterialSelector({
   }
 
   const handleTourClose = () => {
-    setTourOpen(false);
+    setMaterialTourOpen(false);
     Cookies.set("material", true, { expires: 365 });
   };
 
@@ -146,7 +148,7 @@ function MaterialSelector({
       className="shadow-md"
     >
       <Tour
-        open={tourOpen}
+        open={materialTourOpen}
         onClose={() => handleTourClose()}
         steps={tourSteps}
       />

@@ -1,4 +1,3 @@
-// DxfEditor.js
 "use client";
 import { useState, useRef, useEffect, useMemo } from "react";
 import { Line } from "react-konva";
@@ -135,7 +134,7 @@ const DxfEditor = ({ lang, shapesText }) => {
   const [totalPerimeter, setTotalPerimeter] = useState(0);
   const [scale, setScale] = useState(1);
   const [gridVisible, setGridVisible] = useState(true);
-  const [snapToGrid, setSnapToGrid] = useState(false);   // New state
+  const [snapToGrid, setSnapToGrid] = useState(false); // New state
   const [showMeasurements, setShowMeasurements] = useState(true);
   const [stageSize, setStageSize] = useState({ width: 1200, height: 800 });
   const [toolMode, setToolMode] = useState("select");
@@ -173,6 +172,14 @@ const DxfEditor = ({ lang, shapesText }) => {
 
   // Current Step (for multi-step form)
   const [currentStep, setCurrentStep] = useState(1);
+
+  // step tour
+  const [shapeTourOpen, setShapeTourOpen] = useState(false);
+  const [moveIncrementopen, setMoveIncrementOpen] = useState(false);
+  const [mainToolTourOpen, setMainToolTourOpen] = useState(false);
+  const [holeTourOpen, setHoleTourOpen] = useState(false);
+  const [materialTourOpen, setMaterialTourOpen] = useState(false);
+  const [tourThicknessOpen, setTourThicknessOpen] = useState(false);
 
   // Refs
   const stageRef = useRef();
@@ -952,18 +959,7 @@ const DxfEditor = ({ lang, shapesText }) => {
     return minDist;
   };
 
-  /**
-   * Finds the nearest VALID hole position to `clickedPos` inside `shape`.
-   *
-   * Strategy:
-   * - If click is outside shape → project onto the nearest edge inward by minHoleDistance
-   * - If too close to edge (dist < min) → push inward along the click→centroid direction
-   *   until dist === minHoleDistance
-   * - If too far from edge (dist > max) → pull toward nearest edge until dist === maxHoleDistance
-   * - If already valid → return as-is
-   *
-   * Returns { x, y } of the snapped valid position, or null if no valid zone exists.
-   */
+// Find a valid position for a hole
   const findNearestValidPosition = (clickedPos, shape) => {
     const pts = shape.points;
     const n = pts.length;
@@ -1569,6 +1565,18 @@ const DxfEditor = ({ lang, shapesText }) => {
               materialList={materialList}
               isMaterialLoading={isMaterialLoading}
               handleSubmitOrder={handleSubmitOrder}
+              shapeTourOpen={shapeTourOpen}
+              setShapeTourOpen={setShapeTourOpen}
+              moveIncrementopen={moveIncrementopen}
+              setMoveIncrementOpen={setMoveIncrementOpen}
+              mainToolTourOpen={mainToolTourOpen}
+              setMainToolTourOpen={setMainToolTourOpen}
+              holeTourOpen={holeTourOpen}
+              setHoleTourOpen={setHoleTourOpen}
+              materialTourOpen={materialTourOpen}
+              setMaterialTourOpen={setMaterialTourOpen}
+              tourThicknessOpen={tourThicknessOpen}
+              setTourThicknessOpen={setTourThicknessOpen}
             />
 
             {/* Main Canvas Area */}
@@ -1625,6 +1633,8 @@ const DxfEditor = ({ lang, shapesText }) => {
                 moveIncrement={moveIncrement}
                 drillingHoles={drillingHoles}
                 unit={unit}
+                mainToolTourOpen={mainToolTourOpen}
+                setMainToolTourOpen={setMainToolTourOpen}
               />
             </div>
           </div>
